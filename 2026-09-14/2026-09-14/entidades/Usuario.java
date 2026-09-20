@@ -9,6 +9,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.text.Normalizer;
+import java.util.Locale;
 
 /**
  * Classe que representa um livro com seus atributos e métodos de serialização.
@@ -38,7 +40,12 @@ public class Usuario implements aed3.InterfaceRegistro {
      * Construtor padrão que inicializa um usuario com valores padrão.
      */
     public Usuario() {
-        this(-1, "", "", "", "", "");
+        this.idUsuario = -1;
+        this.nome = "";
+        this.email = "";
+        this.hashSenha = "";
+        this.perguntaSecreta = "";
+        this.hashPerguntaSecreta = "";
     }
 
     public Usuario(String nome, String email, String hashSenha, String perguntaSecreta, String hashPerguntaSecreta) {
@@ -79,9 +86,9 @@ public class Usuario implements aed3.InterfaceRegistro {
             setEmail(email);
         
         this.nome = nome;
-        this.hashSenha = hashSenha;
-        this.perguntaSecreta = perguntaSecreta;
-        this.hashPerguntaSecreta = hashPerguntaSecreta;
+        setHashSenha(hashSenha);
+        setPerguntaSecreta(perguntaSecreta);
+        setHashPerguntaSecreta(hashPerguntaSecreta);
     }
 
     /**
@@ -153,8 +160,25 @@ public class Usuario implements aed3.InterfaceRegistro {
      * @param hashSenha A senha a ser atribuída (armazenada como hash)
      */
     public void setHashSenha(String hashSenha) {
+        if(hashSenha == null || hashSenha.trim().isEmpty()) {
+            throw new IllegalArgumentException("Senha não pode ficar vazia.");
+        }
         String salt = generateSalt();
-        this.hashSenha = hashPassword(hashSenha, salt);
+        this.hashSenha = salt + ":" + hashPassword(hashSenha, salt);
+    }
+
+    public boolean verificarSenha(String senha) {
+        if(senha == null || this.hashSenha == null) {
+            return false;
+        }
+
+        String[] partes = this.hashSenha.split(":", 2);
+        if(partes.length != 2) {
+            return false;
+        }
+
+        String hashCalculado = hashPassword(senha, partes[0]);
+        return MessageDigest.isEqual(partes[1].getBytes(StandardCharsets.UTF_8),hashCalculado.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -172,9 +196,7 @@ public class Usuario implements aed3.InterfaceRegistro {
      * @param perguntaSecreta O ____ a ser atribuído
      */
     public void setPerguntaSecreta(String perguntaSecreta) {
-        String salt = generateSalt();
         this.perguntaSecreta = perguntaSecreta;
-        this.hashPerguntaSecreta = hashPassword(perguntaSecreta, salt);
     }
 
     /**
@@ -192,7 +214,31 @@ public class Usuario implements aed3.InterfaceRegistro {
      * @param ____ O ____ a ser atribuído
      */
     public void setHashPerguntaSecreta(String hashPerguntaSecreta) {
-        this.hashPerguntaSecreta = hashPerguntaSecreta;
+        if(hashPerguntaSecreta == null || hashPerguntaSecreta.trim().isEmpty()) {
+            throw new IllegalArgumentException("Resposta secreta não pode ficar vazia.");
+        }
+        String resposta = normalizarResposta(hashPerguntaSecreta);
+        String salt = generateSalt();
+        this.hashPerguntaSecreta = salt + ":" + hashPassword(resposta, salt);
+    }
+
+    private String normalizarResposta(String resposta) {
+        return Normalizer.normalize(resposta, Normalizer.Form.NFD).replaceAll("\\p{M}+", "").toLowerCase(Locale.ROOT);
+    }
+    
+    public boolean verificarRespostaSecreta(String resposta) {
+        if(resposta == null || this.hashPerguntaSecreta == null) {
+            return false;
+        }
+        String[] partes = this.hashPerguntaSecreta.split(":", 2);
+        if(partes.length != 2) {
+            return false;
+        }
+
+        String respostaNormalizada = normalizarResposta(resposta);
+        String hashCalculado = hashPassword(respostaNormalizada, partes[0]);
+
+        return MessageDigest.isEqual(partes[1].getBytes(StandardCharsets.UTF_8),hashCalculado.getBytes(StandardCharsets.UTF_8));
     }
 
     // O método hashCode() deve retornar um número
@@ -210,21 +256,7 @@ public class Usuario implements aed3.InterfaceRegistro {
      */
     @Override
     public String toString() {
-
-        return String.format(
-            "ID..: %d%n" +
-            "Nome: %s%n" +
-            "Email: %s%n" +
-            "Senha: %s%n" +
-            "Pergunta Secreta: %s%n" +
-            "Resposta pergunta: %s%n",
-            idUsuario,
-            nome,
-            email,
-            hashSenha,
-            perguntaSecreta,
-            hashPerguntaSecreta
-        );
+        return String.format("Nome: %s%n" +"Email: %s%n",nome,email);
     }
 
     /**

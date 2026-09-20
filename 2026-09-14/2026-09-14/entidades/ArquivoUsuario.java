@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 public class ArquivoUsuario extends Arquivo<Usuario> {
 
-    ArvoreBMais<ParNomeId> indiceEmail;
+    ArvoreBMais<ParEmailId> indiceEmail;
 
     public ArquivoUsuario() throws Exception {
         super("usuarios", Usuario.class.getConstructor());
-        indiceEmail = new ArvoreBMais<>(ParNomeId.class.getConstructor(), 
+        indiceEmail = new ArvoreBMais<>(ParEmailId.class.getConstructor(), 
             4,
             "./dados/usuarios/indiceEmail.db");
     }
@@ -16,7 +16,7 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
     @Override
     public int create(Usuario usuario) throws Exception {
         int id = super.create(usuario);
-        ParNomeId pNI = new ParNomeId(usuario.getNome(), id);
+        ParEmailId pNI = new ParEmailId(usuario.getEmail(), id);
         indiceEmail.create(pNI);
         return id;
     }
@@ -24,10 +24,10 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
     public Usuario[] readAllByEmail(String email) throws Exception {
         // A busca na árvore B+ precisa ser feita por meio do 
         // hashCode do email (sempre usa o hashCode de uma chave)
-        ArrayList<ParNomeId> lista = indiceEmail.read(new ParNomeId(email, -1));
+        ArrayList<ParEmailId> lista = indiceEmail.read(new ParEmailId(email, -1));
         ArrayList<Usuario> usuarios = new ArrayList<>();
         if(lista != null && lista.size() > 0) {
-            for(ParNomeId p : lista) {
+            for(ParEmailId p : lista) {
                 Usuario u = super.read(p.getId());
                 if(u != null) {
                     usuarios.add(u);
@@ -46,8 +46,8 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
 
             // Se o email mudou, precisamos atualizar o índice
             if(!usuarioAntigo.getEmail().equals(usuarioAtualizado.getEmail())) {
-                indiceEmail.delete(new ParNomeId(usuarioAntigo.getEmail(), id));
-                indiceEmail.create(new ParNomeId(usuarioAtualizado.getEmail(), id));
+                indiceEmail.delete(new ParEmailId(usuarioAntigo.getEmail(), id));
+                indiceEmail.create(new ParEmailId(usuarioAtualizado.getEmail(), id));
             }
             return super.update(usuarioAtualizado);
         }
@@ -59,7 +59,8 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
     public boolean delete(int id) throws Exception {
         Usuario usuario = super.read(id);
         if(usuario != null) {
-            ParNomeId pNI = new ParNomeId(usuario.getEmail(), id);
+            // Cria um par de email e ID temporario para excluir do índice
+            ParEmailId pNI = new ParEmailId(usuario.getEmail(), id);
             indiceEmail.delete(pNI);
             return super.delete(id);
         }

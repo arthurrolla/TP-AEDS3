@@ -22,6 +22,7 @@ public class ControleUsuario {
             System.out.println();
             System.out.println("(A) Login");
             System.out.println("(B) Novo utilizador (primeiro acesso)");
+            System.out.println("(C) Esqueci a minha senha");
             System.out.println();
             System.out.println("(S) Sair");
             System.out.print("\nOpção: " + Utilidades.RESET);
@@ -34,6 +35,9 @@ public class ControleUsuario {
                     break;
                 case "B":
                     telaNovoUsuario(scanner);
+                    break;
+                case "C":
+                    recuperarSenha(scanner);
                     break;
                 case "DEBUG": // <--- COMANDO SECRETO
                     listarTodosUsuariosDebug(scanner);
@@ -192,8 +196,20 @@ public class ControleUsuario {
                 usuarioLogado.setNome(scanner.nextLine().trim());
                 arqUsuarios.update(usuarioLogado);
                 Utilidades.pausar(scanner, "Nome alterado com sucesso!");
+            } else if (opcao.equals("B")) {
+                System.out.print("Novo email: ");
+                String novoEmail = scanner.nextLine().trim();
+                
+                // Verifica se já existe outro utilizador com este email
+                if (arqUsuarios.readByEmail(novoEmail) != null) {
+                    Utilidades.pausar(scanner, "Erro: Este email já está em uso.");
+                } else {
+                    usuarioLogado.setEmail(novoEmail);
+                    arqUsuarios.update(usuarioLogado);
+                    Utilidades.pausar(scanner, "Email alterado com sucesso!");
+                } 
             } else if (!opcao.equals("R")) {
-                Utilidades.pausar(scanner, "Opção de alteração em desenvolvimento.");
+                    Utilidades.pausar(scanner, "Opção de alteração em desenvolvimento.");
             }
         } while (!opcao.equals("R"));
     }
@@ -221,5 +237,32 @@ public class ControleUsuario {
         
         System.out.println(Utilidades.COR_ROSA + "----------------------------------------------" + Utilidades.RESET);
         Utilidades.pausar(scanner, "");
+    }
+
+    private void recuperarSenha(Scanner scanner) throws Exception {
+        Utilidades.limparEcra();
+        System.out.println(Utilidades.COR_ROSA + "RECUPERAÇÃO DE SENHA" + Utilidades.COR_TEXTO);
+        System.out.print("\nDigite o seu Email: " + Utilidades.RESET);
+        String email = scanner.nextLine().trim();
+
+        Usuario u = arqUsuarios.readByEmail(email);
+        if (u == null) {
+            Utilidades.pausar(scanner, "Email não encontrado.");
+            return;
+        }
+
+        System.out.println(Utilidades.COR_TEXTO + "\nPergunta Secreta: " + u.getPerguntaSecraeta());
+        System.out.print("Sua Resposta: " + Utilidades.RESET);
+        String resposta = scanner.nextLine().trim();
+
+        if (u.verificarRespostaSecreta(resposta)) {
+            System.out.print(Utilidades.COR_TEXTO + "\nDigite a NOVA senha: " + Utilidades.RESET);
+            String novaSenha = scanner.nextLine().trim();
+            u.setHashSenha(novaSenha);
+            arqUsuarios.update(u);
+            Utilidades.pausar(scanner, "Senha alterada com sucesso! Faça login com a nova senha.");
+        } else {
+            Utilidades.pausar(scanner, "Resposta incorreta.");
+        }
     }
 }

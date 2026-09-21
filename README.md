@@ -79,6 +79,41 @@ Cada pergunta possui o atributo `idUsuario`, que identifica o usuário que a cri
 
 As operações de alteração e arquivamento verificam se o ID do usuário solicitante corresponde ao usuário que criou a pergunta. A interface fornece esse ID a partir do usuário autenticado. Na exclusão de um usuário pelo CRUD, o sistema remove suas perguntas, inclusive as arquivadas, e os respectivos vínculos na árvore antes de excluir o usuário e sua entrada no índice de e-mail. Essa rotina não está exposta como uma opção nos menus.
 
+## Checklist
 
-##video:
-##FIM
+- **Há um CRUD de usuários (que estende a classe Arquivo, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade) que funciona corretamente?**
+
+  ```text
+  SIM
+
+- **Há um CRUD de perguntas (que estende a classe Arquivo, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade) que funciona corretamente?**
+
+  ```text
+  SIM
+  
+- **As perguntas estão vinculadas aos usuários usando o idUsuario como chave estrangeira?**
+
+  ```text
+  SIM
+  
+- **Há uma árvore B+ que registre o relacionamento 1:N entre usuários e perguntas?**
+
+  ```text
+  SIM
+
+- **O trabalho compila corretamente?**
+
+  ```text
+  SIM
+
+- **O trabalho está completo e funcionando sem erros de execução?**
+
+  ```text
+  SIM
+
+- **O trabalho é original e não a cópia de um trabalho de outro grupo?**
+
+  ```text
+  SIM
+
+  

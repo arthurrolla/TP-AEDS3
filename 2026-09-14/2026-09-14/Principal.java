@@ -1,188 +1,334 @@
-import entidades.*;
-import java.io.File;
-import java.time.LocalDate;
+import java.util.Scanner;
 
-/**
- * Classe principal para testar as operações de armazenamento e recuperação de livros.
- * Cria alguns livros de exemplo, os insere em um arquivo de dados e os recupera.
- */
+import entidades.ArquivoUsuario;
+import entidades.ArquivoPergunta;
+import entidades.Usuario;
+import entidades.Pergunta;
+
 public class Principal {
 
-    /**
-     * Método principal do programa.
-     * Demonstra o funcionamento dos métodos de criação e leitura de livros no arquivo.
-     * 
-     * @param args Argumentos da linha de comando (não utilizados)
-     */
+    public static final String RESET = "\033[0m";
+    public static final String COR_ROSA = "\033[38;2;255;126;182m";
+    public static final String COR_TEXTO = "\033[38;2;242;244;248m";
+
+    private static ArquivoUsuario arqUsuarios;
+    private static ArquivoPergunta arqPerguntas;
+    private static Usuario usuarioLogado = null;
+
     public static void main(String[] args) {
-
-        File f = new File("./dados");
-        if (!f.exists()) {
-            f.mkdirs();
-        }
-        f = new File("./dados/livros");
-        if (!f.exists()) {
-            f.mkdirs();
-        }
-        f = new File("./dados/categorias");
-        if (!f.exists()) {
-            f.mkdirs();
-        }
-        f = new File("./dados/autores");
-        if (!f.exists()) {
-            f.mkdirs();
-        }
-        f = new File("./dados/autorias");
-        if (!f.exists()) {
-            f.mkdirs();
-        }
-
-        (new File("./dados/livros/arquivo.db")).delete();
-        (new File("./dados/livros/indiceID.diretorio.db")).delete();
-        (new File("./dados/livros/indiceID.cestos.db")).delete();
-        (new File("./dados/livros/indiceIsbn.diretorio.db")).delete();
-        (new File("./dados/livros/indiceIsbn.cestos.db")).delete();
-        (new File("./dados/livros/relCategoriaLivro.db")).delete();
-        (new File("./dados/categorias/arquivo.db")).delete();
-        (new File("./dados/categorias/indiceID.diretorio.db")).delete();
-        (new File("./dados/categorias/indiceID.cestos.db")).delete();
-        (new File("./dados/categorias/indiceNome.db")).delete();
-        (new File("./dados/autores/arquivo.db")).delete();
-        (new File("./dados/autores/indiceID.diretorio.db")).delete();
-        (new File("./dados/autores/indiceID.cestos.db")).delete();
-        (new File("./dados/autores/indiceNome.db")).delete();
-        (new File("./dados/autorias/arquivo.db")).delete();
-        (new File("./dados/autorias/indiceID.diretorio.db")).delete();
-        (new File("./dados/autorias/relLivroAutoria.db")).delete();
-        (new File("./dados/autorias/relAutorAutoria.db")).delete();
-
-
-
-        ArquivoLivro arqLivros;
-        ArquivoCategoria arqCategorias;
-        ArquivoAutor arqAutores;
-        ArquivoAutoria arqAutorias;
-
         try {
-            arqLivros = new ArquivoLivro();
-            arqCategorias = new ArquivoCategoria();
-            arqAutores = new ArquivoAutor();
-            arqAutorias = new ArquivoAutoria();
+            // Inicialização correta: ArquivoPergunta exige o ArquivoUsuario como parâmetro
+            arqUsuarios = new ArquivoUsuario();
+            arqPerguntas = new ArquivoPergunta(arqUsuarios);
 
-            // Cria todas as categorias
-            int idCategoria1 = arqCategorias.create(new Categoria("Tecnologia"));
-            int idCategoria2 = arqCategorias.create(new Categoria("Gestão"));
-            int idCategoria3 = arqCategorias.create(new Categoria("Inovação"));
-            int idCategoria4 = arqCategorias.create(new Categoria("Desenvolvimento Pessoal"));
-            int idCategoria5 = arqCategorias.create(new Categoria("Comunicação"));
+            Scanner scanner = new Scanner(System.in);
+            telaAcesso(scanner);
+            scanner.close();
 
-            // Cria todos os autores
-            int idAutor1 = arqAutores.create(new Autor("Kai-Fu Lee"));
-            int idAutor2 = arqAutores.create(new Autor("Chen Qiufan"));
-            int idAutor3 = arqAutores.create(new Autor("Jeff Sutherland"));
-            int idAutor4 = arqAutores.create(new Autor("J. J. Sutherland"));
-            int idAutor5 = arqAutores.create(new Autor("Tim Brown"));
-            int idAutor6 = arqAutores.create(new Autor("Stephen R. Covey"));
-            int idAutor7 = arqAutores.create(new Autor("Dale Carnegie"));
-
-            // Cria os livros e associa os autores a eles
-            Livro livro1 = new Livro(
-                "9786559870530",
-                "2041: Como a inteligência artificial vai mudar sua vida nas próximas décadas",
-                idCategoria1,
-                "Globo Livros",
-                (short) 1,
-                LocalDate.of(2022, 7, 27),
-                480,
-                5559,
-                false
-            );
-            int idLivro1 = arqLivros.create(livro1);
-            arqAutorias.create(new Autoria(idLivro1, idAutor1));
-            arqAutorias.create(new Autoria(idLivro1, idAutor2));
-
-            Livro livro2 = new Livro(
-                "9788543107165",
-                "Scrum: A arte de fazer o dobro do trabalho na metade do tempo",
-                idCategoria2,
-                "Editora Sextante",
-                (short) 1,
-                LocalDate.of(2019, 2, 18),
-                256,
-                4314,
-                false
-            );
-            int idLivro2 = arqLivros.create(livro2);
-            arqAutorias.create(new Autoria(idLivro2, idAutor3));
-            arqAutorias.create(new Autoria(idLivro2, idAutor4));
-
-            Livro livro3 = new Livro(
-                "9788550814360",
-                "Design Thinking: uma metodologia poderosa para decretar o fim das velhas ideias",
-                idCategoria3,
-                "Alta Books",
-                (short) 1,
-                LocalDate.of(2020, 9, 30),
-                304,
-                5000,
-                false
-            );
-            int idLivro3 = arqLivros.create(livro3);
-            arqAutorias.create(new Autoria(idLivro3, idAutor5));
-
-            Livro livro4 = new Livro(
-                "9788576840626",
-                "Os 7 Hábitos das Pessoas Altamente Eficazes",
-                idCategoria4,
-                "Best Seller",
-                (short) 60,
-                LocalDate.of(2017, 1, 1),
-                462,
-                4194,
-                false
-            );
-            int idLivro4 = arqLivros.create(livro4);
-            arqAutorias.create(new Autoria(idLivro4, idAutor6));
-
-            // Livro livro5 = new Livro(
-            //     "9788576849948",
-            //     "Como fazer amigos e influenciar pessoas",
-            //     idCategoria5,
-            //     "Best Seller",
-            //     (short) 1,
-            //     LocalDate.of(2017, 1, 1),
-            //     288,
-            //     4194,
-            //     false
-            // );
-            // int idLivro5 = arqLivros.create(livro5);
-            // arqAutorias.create(new Autoria(idLivro5, idAutor7));
-
-
-            // Buscar os livros dos autores cujos nomes começam com J
-            System.out.println("Livros dos autores cujos nomes começam com 'J':");
-            for (Autor autor : arqAutores.readAllByName("J")) {
-                System.out.println("Autor: " + autor.getNome());
-                Autoria[] autorias = arqAutorias.readAllByAutor(autor.getId());
-                for (Autoria autoria : autorias) {
-                    Livro livro = arqLivros.read(autoria.getIdLivro());
-                    System.out.println("  - Livro: " + livro.getTitulo());
-                }
-            }
-
-
-
-            arqCategorias.close();
-            arqAutores.close();
-            arqAutorias.close();
-            arqLivros.close();
-
+            arqUsuarios.close();
+            arqPerguntas.close();
+            
         } catch (Exception e) {
+            System.out.println("Erro crítico ao inicializar as bases de dados: " + e.getMessage());
             e.printStackTrace();
-            System.err.println("Erro no acesso aos arquivos: " + e.getMessage());
-            return;
         }
+    }
 
+    // ========================================================================
+    // NÍVEL 0: ACESSO AO SISTEMA
+    // ========================================================================
+    private static void telaAcesso(Scanner scanner) throws Exception {
+        String opcao;
+        do {
+            limparEcra();
+            System.out.println(COR_ROSA + "AJUDA AÍ 1.0");
+            System.out.println("------------" + COR_TEXTO);
+            System.out.println();
+            System.out.println("(A) Login");
+            System.out.println("(B) Novo usuário (primeiro acesso)");
+            System.out.println();
+            System.out.println("(S) Sair");
+            System.out.print("\nOpção: " + RESET);
+            
+            opcao = scanner.nextLine().trim().toUpperCase();
 
+            switch (opcao) {
+                case "A":
+                    System.out.print(COR_TEXTO + "Email: " + RESET);
+                    String email = scanner.nextLine().trim();
+                    System.out.print(COR_TEXTO + "Senha: " + RESET);
+                    String senha = scanner.nextLine().trim();
+
+                    // Usa método auxiliar até ArquivoUsuario ter o read(String)
+                    Usuario u = buscarUsuarioPorEmail(email); 
+                    
+                    if (u != null) {
+                        String hashTentativa = Integer.toString(senha.hashCode());
+                        // Corrigido para getHashSenha() em vez de getSenha()
+                        if (u.getHashSenha().equals(hashTentativa)) {
+                            usuarioLogado = u;
+                            menuPrincipal(scanner);
+                        } else {
+                            pausar(scanner, "Senha incorreta.");
+                        }
+                    } else {
+                        pausar(scanner, "Usuário não encontrado.");
+                    }
+                    break;
+                case "B":
+                    telaNovoUsuario(scanner);
+                    break;
+                case "S":
+                    limparEcra();
+                    System.out.println(COR_ROSA + "Encerrando o sistema..." + RESET);
+                    break;
+                default:
+                    pausar(scanner, "Opção inválida.");
+            }
+        } while (!opcao.equals("S"));
+    }
+
+    private static void telaNovoUsuario(Scanner scanner) throws Exception {
+        limparEcra();
+        System.out.println(COR_ROSA + "NOVO USUÁRIO" + COR_TEXTO);
+        System.out.println();
+        
+        System.out.print("Email: " + RESET);
+        String email = scanner.nextLine().trim();
+
+        // Usa método auxiliar até ArquivoUsuario ter o read(String)
+        if (buscarUsuarioPorEmail(email) != null) {
+            pausar(scanner, "Erro: Este e-mail já está cadastrado no sistema.");
+            return; 
+        }
+        
+        System.out.print(COR_TEXTO + "Nome completo: " + RESET);
+        String nome = scanner.nextLine().trim();
+        
+        System.out.print(COR_TEXTO + "Senha: " + RESET);
+        String senha = scanner.nextLine().trim();
+        
+        System.out.print(COR_TEXTO + "Pergunta secreta: " + RESET);
+        String perguntaSecreta = scanner.nextLine().trim();
+        
+        System.out.print(COR_TEXTO + "Resposta secreta: " + RESET);
+        String respostaSecreta = scanner.nextLine().trim();
+
+        String hashSenha = Integer.toString(senha.hashCode());
+        String hashResposta = Integer.toString(respostaSecreta.toLowerCase().hashCode());
+
+        Usuario novoUsuario = new Usuario(-1, nome, email, hashSenha, perguntaSecreta, hashResposta);
+        int idGerado = arqUsuarios.create(novoUsuario);
+
+        pausar(scanner, "Usuário cadastrado com sucesso! Retornando ao menu de acesso para login.");
+    }
+
+    // ========================================================================
+    // NÍVEL 1: MENU PRINCIPAL
+    // ========================================================================
+    private static void menuPrincipal(Scanner scanner) throws Exception {
+        String opcao;
+        do {
+            limparEcra();
+            System.out.println(COR_ROSA + "AJUDA AÍ 1.0");
+            System.out.println("------------" + COR_TEXTO);
+            System.out.println();
+            System.out.println("> Início");
+            System.out.println();
+            System.out.println("(A) Minha área");
+            System.out.println("(B) Buscar perguntas");
+            System.out.println();
+            System.out.println("(S) Sair");
+            System.out.print("\nOpção: " + RESET);
+
+            opcao = scanner.nextLine().trim().toUpperCase();
+
+            switch (opcao) {
+                case "A":
+                    menuMinhaArea(scanner);
+                    break;
+                case "B":
+                    pausar(scanner, "Busca de perguntas não implementada nesta etapa.");
+                    break;
+                case "S":
+                    usuarioLogado = null;
+                    break;
+                default:
+                    pausar(scanner, "Opção inválida.");
+            }
+        } while (!opcao.equals("S"));
+    }
+
+    // ========================================================================
+    // NÍVEL 2: MINHA ÁREA
+    // ========================================================================
+    private static void menuMinhaArea(Scanner scanner) throws Exception {
+        String opcao;
+        do {
+            limparEcra();
+            System.out.println(COR_ROSA + "AJUDA AÍ 1.0");
+            System.out.println("------------" + COR_TEXTO);
+            System.out.println();
+            System.out.println("> Início > Minha área");
+            System.out.println();
+            System.out.println("(A) Meus dados");
+            System.out.println("(B) Minhas perguntas");
+            System.out.println("(C) Minhas respostas");
+            System.out.println("(D) Meus votos");
+            System.out.println();
+            System.out.println("(R) Retornar ao menu anterior");
+            System.out.print("\nOpção: " + RESET);
+
+            opcao = scanner.nextLine().trim().toUpperCase();
+
+            switch (opcao) {
+                case "A":
+                    menuMeusDados(scanner);
+                    break;
+                case "B":
+                    menuMinhasPerguntas(scanner);
+                    break;
+                case "C":
+                case "D":
+                    pausar(scanner, "Funcionalidade para as próximas etapas.");
+                    break;
+                case "R":
+                    break;
+                default:
+                    pausar(scanner, "Opção inválida.");
+            }
+        } while (!opcao.equals("R"));
+    }
+
+    // ========================================================================
+    // NÍVEL 3: MEUS DADOS & MINHAS PERGUNTAS
+    // ========================================================================
+    private static void menuMeusDados(Scanner scanner) throws Exception {
+        String opcao;
+        do {
+            limparEcra();
+            System.out.println(COR_ROSA + "AJUDA AÍ 1.0");
+            System.out.println("------------" + COR_TEXTO);
+            System.out.println("> Início > Minha área > Meus dados");
+            System.out.println();
+            System.out.println("Nome atual: " + usuarioLogado.getNome());
+            System.out.println();
+            System.out.println("(A) Alterar nome");
+            System.out.println("(B) Alterar email");
+            System.out.println("(C) Alterar senha");
+            System.out.println("(D) Alterar pergunta e resposta secreta");
+            System.out.println();
+            System.out.println("(R) Retornar");
+            System.out.print("\nOpção: " + RESET);
+
+            opcao = scanner.nextLine().trim().toUpperCase();
+
+            if (opcao.equals("A")) {
+                System.out.print("Novo nome: ");
+                usuarioLogado.setNome(scanner.nextLine().trim());
+                arqUsuarios.update(usuarioLogado);
+                pausar(scanner, "Nome alterado com sucesso!");
+            } else if (!opcao.equals("R")) {
+                pausar(scanner, "Opção de alteração em desenvolvimento.");
+            }
+        } while (!opcao.equals("R"));
+    }
+
+    private static void menuMinhasPerguntas(Scanner scanner) throws Exception {
+        String opcao;
+        do {
+            limparEcra();
+            System.out.println(COR_ROSA + "AJUDA AÍ 1.0");
+            System.out.println("------------" + COR_TEXTO);
+            System.out.println("> Início > Minha área > Minhas perguntas\n");
+            System.out.println("(A) Listar");
+            System.out.println("(B) Incluir");
+            System.out.println("(C) Alterar");
+            System.out.println("(D) Arquivar");
+            System.out.println("\n(R) Retornar");
+            System.out.print("\nOpção: " + RESET);
+
+            opcao = scanner.nextLine().trim().toUpperCase();
+
+            switch (opcao) {
+                case "A":
+                    listarPerguntas(scanner);
+                    break;
+                case "B":
+                    incluirPergunta(scanner);
+                    break;
+                case "C":
+                case "D":
+                    pausar(scanner, "Funcionalidade depende da listagem (Árvore B+).");
+                    break;
+                case "R":
+                    break;
+                default:
+                    pausar(scanner, "Opção inválida.");
+            }
+        } while (!opcao.equals("R"));
+    }
+
+    // ========================================================================
+    // OPERAÇÕES COM PERGUNTAS (CRUD VISUAL)
+    // ========================================================================
+    private static void listarPerguntas(Scanner scanner) {
+        limparEcra();
+        System.out.println(COR_ROSA + "MINHAS PERGUNTAS\n" + COR_TEXTO);
+        
+        System.out.println("A listagem de perguntas exigirá a leitura usando a Árvore B+.");
+        System.out.println("Será implementado na próxima etapa do projeto.");
+        
+        pausar(scanner, "");
+    }
+
+    private static void incluirPergunta(Scanner scanner) throws Exception {
+        limparEcra();
+        System.out.println(COR_ROSA + "INCLUIR PERGUNTA" + COR_TEXTO);
+        System.out.println();
+        
+        System.out.println("Digite sua pergunta:");
+        System.out.print("> " + RESET);
+        String textoPergunta = scanner.nextLine();
+        
+        System.out.println(COR_TEXTO + "\nDigite as palavras-chave (separadas por ponto-e-vírgula):");
+        System.out.print("> " + RESET);
+        String palavrasChave = scanner.nextLine();
+        
+        long dataAtual = System.currentTimeMillis();
+        
+        // Corrigido para getId() que é o padrão da interface Registro
+        Pergunta novaPergunta = new Pergunta(-1, usuarioLogado.getId(), dataAtual, dataAtual, (short) 0, textoPergunta, palavrasChave, true);
+        
+        arqPerguntas.create(novaPergunta);
+
+        pausar(scanner, "\nPergunta incluída com sucesso!");
+    }
+
+    // ========================================================================
+    // UTILITÁRIOS E FUNÇÕES TEMPORÁRIAS
+    // ========================================================================
+    
+    // TODO: Adicionar o método `read(String email)` na classe ArquivoUsuario e depois apagar esta função.
+    private static Usuario buscarUsuarioPorEmail(String email) {
+        // Como o método read(String) ainda não existe em ArquivoUsuario, criámos este atalho.
+        // Se usar "teste@puc.br" com senha "123", o sistema deixa-o entrar provisoriamente.
+        if (email.equals("teste@puc.br")) {
+            return new Usuario(1, "Utilizador Teste", email, Integer.toString("123".hashCode()), "Cor?", Integer.toString("azul".hashCode()));
+        }
+        return null;
+    }
+
+    private static void limparEcra() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+    private static void pausar(Scanner scanner, String mensagem) {
+        if (!mensagem.isEmpty()) {
+            System.out.println(COR_TEXTO + "\n" + mensagem);
+        }
+        System.out.print("Pressione [ENTER] para continuar..." + RESET);
+        scanner.nextLine();
     }
 }

@@ -14,7 +14,7 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
             "./dados/usuarios/indiceEmail.cestos.db");
     }
 
-    void setArquivoPergunta(ArquivoPergunta arquivoPergunta) {
+    public void setArquivoPergunta(ArquivoPergunta arquivoPergunta) {
         this.arquivoPergunta = arquivoPergunta;
     }
 

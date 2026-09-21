@@ -80,5 +80,5 @@ Cada pergunta possui o atributo `idUsuario`, que identifica o usuário que a cri
 As operações de alteração e arquivamento verificam se o ID do usuário solicitante corresponde ao usuário que criou a pergunta. A interface fornece esse ID a partir do usuário autenticado. Na exclusão de um usuário pelo CRUD, o sistema remove suas perguntas, inclusive as arquivadas, e os respectivos vínculos na árvore antes de excluir o usuário e sua entrada no índice de e-mail. Essa rotina não está exposta como uma opção nos menus.
 
 
-#video:
+##video:
 ##FIM

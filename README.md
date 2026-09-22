@@ -63,13 +63,22 @@ O cadastro de usuários gera automaticamente o ID e registra o e-mail no índice
 
 Na alteração do e-mail, o sistema verifica a disponibilidade do novo endereço e atualiza o índice, preservando o ID original. Na interface atual, o menu “Meus dados” permite alterar nome e e-mail, enquanto as opções de alteração de senha e de pergunta e resposta secreta ainda apresentam a mensagem de funcionalidade em desenvolvimento.
 
+*(captura de tela mostrando o cadastro de um usuário no terminal)*
+![Cadastro de Usuário](imagens/cadastro_usuario.png)
+
 ### Login e recuperação de senha
 
 O login consulta o usuário pelo e-mail e verifica a senha informada. Quando o acesso é validado, o controle mantém a referência ao usuário autenticado e apresenta o menu principal.A opção “Esqueci a minha senha” solicita o e-mail e apresenta a pergunta secreta cadastrada. Se a resposta for validada, permite definir uma nova senha e grava a atualização no arquivo de usuários. A senha e a resposta secreta são armazenadas como hashes SHA-256 acompanhados de salts aleatórios, sem guardar os textos originais. Os métodos de verificação utilizam o salt armazenado para conferir os dados informados. Antes do cálculo do hash da resposta secreta, são removidos os acentos e as letras são convertidas para minúsculas. Assim, respostas como “São Paulo” e “sao paulo” são consideradas equivalentes.
 
+*(captura de tela mostrando o fluxo de recuperação de senha)*
+![Recuperação de Senha](imagens/recuperacao_senha.png)
+
 ### Inclusão, listagem, alteração e arquivamento de perguntas
 
-Na inclusão pela interface, o usuário informa o texto e as palavras-chave. O controle utiliza o ID do usuário autenticado, preenche as datas com o horário atual, define a nota inicial como zero e marca a pergunta como ativa. O CRUD gera o ID da pergunta automaticamente. A listagem consulta a árvore B+ para recuperar as perguntas vinculadas ao usuário logado. A tela apresenta números sequenciais, data, texto e palavras-chave. 
+Na inclusão pela interface, o usuário informa o texto e as palavras-chave. O controle utiliza o ID do usuário autenticado, preenche as datas com o horário atual, define a nota inicial como zero e marca a pergunta como ativa. O CRUD gera o ID da pergunta automaticamente. A listagem consulta a árvore B+ para recuperar as perguntas vinculadas ao usuário logado. A tela apresenta números sequenciais, data, texto e palavras-chave.
+
+*(captura de tela mostrando a listagem de perguntas de um usuário, com destaque para a numeração sequencial e o status de arquivamento)*
+![Listagem de Perguntas](imagens/listagem_perguntas.png)
 
 As perguntas arquivadas recebem a indicação `ARQUIVADA`. A alteração permite modificar o texto e as palavras-chave, atualizando a data de alteração. A interface impede a edição de perguntas já arquivadas. O arquivamento define `ativa` como `false`, mantendo a pergunta armazenada e vinculada ao usuário que a criou. As perguntas arquivadas continuam disponíveis na consulta das próprias perguntas. Não há operação de desarquivamento, e a exclusão comum de perguntas é bloqueada.
 

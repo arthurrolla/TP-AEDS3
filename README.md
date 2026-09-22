@@ -23,7 +23,8 @@ Certifique-se de que tem o Java (JDK) instalado. Abra o terminal na pasta onde e
 
 1. **Compilar o código:**
    ```bash
-   javac Principal.java
+   javac -encoding UTF-8 Principal.java
+   java Principal
 
 
 ## Estrutura do projeto
@@ -68,7 +69,7 @@ Na alteração do e-mail, o sistema verifica a disponibilidade do novo endereço
 
 ### Login e recuperação de senha
 
-O login consulta o usuário pelo e-mail e verifica a senha informada. Quando o acesso é validado, o controle mantém a referência ao usuário autenticado e apresenta o menu principal.A opção “Esqueci a minha senha” solicita o e-mail e apresenta a pergunta secreta cadastrada. Se a resposta for validada, permite definir uma nova senha e grava a atualização no arquivo de usuários. A senha e a resposta secreta são armazenadas como hashes SHA-256 acompanhados de salts aleatórios, sem guardar os textos originais. Os métodos de verificação utilizam o salt armazenado para conferir os dados informados. Antes do cálculo do hash da resposta secreta, são removidos os acentos e as letras são convertidas para minúsculas. Assim, respostas como “São Paulo” e “sao paulo” são consideradas equivalentes.
+O login consulta o usuário pelo e-mail e verifica a senha informada. Quando o acesso é validado, o controle mantém a referência ao usuário autenticado e apresenta o menu principal. A opção “Esqueci a minha senha” solicita o e-mail e apresenta a pergunta secreta cadastrada. Se a resposta for validada, permite definir uma nova senha e grava a atualização no arquivo de usuários. A senha e a resposta secreta são armazenadas como hashes SHA-256 acompanhados de salts aleatórios, sem guardar os textos originais. Os métodos de verificação utilizam o salt armazenado para conferir os dados informados. Antes do cálculo do hash da resposta secreta, são removidos os acentos e as letras são convertidas para minúsculas. Assim, respostas como “São Paulo” e “sao paulo” são consideradas equivalentes.
 
 *(captura de tela mostrando o fluxo de recuperação de senha)*
 ![Recuperação de Senha](imagens/recuperacao_senha.png)
@@ -94,37 +95,43 @@ As operações de alteração e arquivamento verificam se o ID do usuário solic
 
   ```text
   SIM
+  ```
 
 - **Há um CRUD de perguntas (que estende a classe Arquivo, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade) que funciona corretamente?**
 
   ```text
   SIM
+  ```
   
 - **As perguntas estão vinculadas aos usuários usando o idUsuario como chave estrangeira?**
 
   ```text
   SIM
+  ```
   
 - **Há uma árvore B+ que registre o relacionamento 1:N entre usuários e perguntas?**
 
   ```text
   SIM
+  ```
 
 - **O trabalho compila corretamente?**
 
   ```text
   SIM
+  ```
 
 - **O trabalho está completo e funcionando sem erros de execução?**
 
   ```text
-  SIM
+   NÃO. As opções de alteração de senha e de pergunta/resposta secreta em “Meus dados” ainda estão em desenvolvimento. Entradas não numéricas na seleção de perguntas também podem encerrar o programa.
+   ```
 
 - **O trabalho é original e não a cópia de um trabalho de outro grupo?**
 
   ```text
   SIM
-  
+  ```
 
 ### Vídeo de Demonstração
   - **Link do Youtube**: https://youtu.be/V7aLG8FnlTk

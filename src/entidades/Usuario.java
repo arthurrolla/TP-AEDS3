@@ -55,19 +55,14 @@ public class Usuario implements aed3.InterfaceRegistro {
 
 
     /**
-     * Construtor que inicializa um livro com todos os seus atributos.
-     * Valida o ISBN, edição, número de páginas e preço.
+     * Construtor que inicializa um usuario com todos os seus atributos.
      * 
-     * @param id Identificador único do livro
-     * @param isbn Código ISBN-13 do livro
-     * @param titulo Título do livro
-     * @param idCategoria Identificador da categoria do livro
-     * @param editora Editora do livro
-     * @param edicao Número da edição (0-255)
-     * @param dataLancamento Data de lançamento do livro
-     * @param numeroPaginas Número de páginas (0-65535)
-     * @param precoEmCentavos Preço em centavos
-     * @param ebook Indica se é disponível em formato e-book
+     * @param id Identificador único do usuario
+     * @param nome Nome do usuario
+     * @param email Email do usuario
+     * @param hashSenha Senha do usuario (armazenada como hash)
+     * @param perguntaSecreta Pergunta secreta para recuperação de senha
+     * @param hashPerguntaSecreta Resposta da pergunta secreta (armazenada como hash)
      */
     public Usuario(int id,
                  String nome,
@@ -78,7 +73,7 @@ public class Usuario implements aed3.InterfaceRegistro {
 
         this.idUsuario = id;
 
-        // O ISBN vazio é permitido apenas para possibilitar
+        // O email vazio é permitido apenas para possibilitar
         // a construção de um objeto ainda não preenchido.
         if (email == null || email.isEmpty())
             this.email = "";

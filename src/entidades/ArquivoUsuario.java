@@ -6,6 +6,7 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
     HashExtensivel<ParEmailId> indiceEmail;
     private ArquivoPergunta arquivoPergunta;
 
+    // Construtor que inicializa o arquivo de usuários e o índice de emails.
     public ArquivoUsuario() throws Exception {
         super("usuarios", Usuario.class.getConstructor());
         indiceEmail = new HashExtensivel<>(ParEmailId.class.getConstructor(), 
@@ -14,10 +15,12 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
             "./dados/usuarios/indiceEmail.cestos.db");
     }
 
+    // Define o arquivo de perguntas associado ao arquivo de usuários.
     public void setArquivoPergunta(ArquivoPergunta arquivoPergunta) {
         this.arquivoPergunta = arquivoPergunta;
     }
 
+    // Cria um novo usuário, garantindo que o email seja único.
     @Override
     public int create(Usuario usuario) throws Exception {
         String email = usuario.getEmail();
@@ -41,6 +44,7 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
         return id;
     }
 
+    // Lê um usuário pelo email, utilizando o índice de emails.
     public Usuario readByEmail(String email) throws Exception {
         ParEmailId par = indiceEmail.read(ParEmailId.hash(email));
         if(par == null || !par.getEmail().equals(email)) {
@@ -55,6 +59,7 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
         return null;
     }
 
+    // Atualiza um usuário, garantindo que o email seja único.
     @Override
     public boolean update(Usuario usuarioAtualizado) throws Exception {
         int id = usuarioAtualizado.getId();
@@ -96,6 +101,7 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
         return true;
     }
   
+    // Exclui um usuário, removendo também suas perguntas e vínculos.
     @Override
     public boolean delete(int id) throws Exception {
         Usuario usuario = super.read(id);

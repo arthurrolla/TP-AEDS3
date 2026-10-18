@@ -16,14 +16,17 @@ public class Principal {
             // Inicializa as bases de dados
             arqUsuarios = new ArquivoUsuario();
             arqPerguntas = new ArquivoPergunta(arqUsuarios);
-            arqRespostas = new ArquivoResposta();
+            arqRespostas = new ArquivoResposta(arqUsuarios, arqPerguntas);
+            arqPerguntas.setArquivoResposta(arqRespostas);
+            arqUsuarios.setArquivoResposta(arqRespostas);
             arqAvaliacoes = new ArquivoAvaliacao(arqRespostas);
+            arqUsuarios.setArquivoAvaliacao(arqAvaliacoes);
 
             // Linha para amarrar a dependência do Delete!
             arqUsuarios.setArquivoPergunta(arqPerguntas);
 
             // Inicializa os controladores com acesso aos arquivos correspondentes
-            ControlePergunta controlePergunta = new ControlePergunta(arqPerguntas);
+            ControlePergunta controlePergunta = new ControlePergunta(arqPerguntas, arqUsuarios, arqRespostas);
             ControleUsuario controleUsuario = new ControleUsuario(arqUsuarios, controlePergunta);
 
             // Inicia o programa

@@ -122,7 +122,7 @@ public class ControleUsuario {
                     menuMinhaArea(scanner);
                     break;
                 case "B":
-                    Utilidades.pausar(scanner, "Busca de perguntas não implementada nesta etapa.");
+                    controlePergunta.menuBuscarPerguntas(scanner, usuarioLogado.getId());
                     break;
                 case "S":
                     usuarioLogado = null;
@@ -145,7 +145,7 @@ public class ControleUsuario {
             System.out.println("(A) Meus dados");
             System.out.println("(B) Minhas perguntas");
             System.out.println("(C) Minhas respostas");
-            System.out.println("(D) Meus votos");
+            System.out.println("(D) Minhas avaliações");
             System.out.println();
             System.out.println("(R) Retornar ao menu anterior");
             System.out.print("\nOpção: " + Utilidades.RESET);

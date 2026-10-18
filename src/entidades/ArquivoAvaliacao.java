@@ -62,7 +62,10 @@ public class ArquivoAvaliacao extends Arquivo<Avaliacao> {
         if (!super.delete(idAvaliacao)) {
             return false;
         }
-        arquivoResposta.ajustarNota(avaliacao.getIdResposta(), avaliacao.isAvaliacao() ? -1 : 1, -1);
+        boolean ajustou = arquivoResposta.ajustarNota(avaliacao.getIdResposta(),avaliacao.isAvaliacao() ? -1 : 1,-1);
+        if (!ajustou) {
+            throw new Exception("A avaliação foi removida, mas não foi possível ajustar a resposta.");
+        }
         return true;
     }
 
@@ -74,6 +77,20 @@ public class ArquivoAvaliacao extends Arquivo<Avaliacao> {
     // Busca todas as avaliações feitas por um usuário usando a árvore B+
     public ArrayList<Avaliacao> readAvaliacoesPorUsuario(int idUsuario) throws Exception {
         return lerPorPares(relUsuarioAvaliacao.read(new ParIdId(idUsuario, -1)));
+    }
+
+    // Uso interno: cancela as avaliações quando seu usuário é excluído.
+    void excluirPorUsuario(int idUsuario) throws Exception {
+        ArrayList<Avaliacao> avaliacoes =
+            readAvaliacoesPorUsuario(idUsuario);
+
+        for (Avaliacao avaliacao : avaliacoes) {
+            if (!cancelar(avaliacao.getId())) {
+                throw new Exception(
+                    "Não foi possível cancelar uma avaliação do usuário."
+                );
+            }
+        }
     }
 
     // Uso interno: remove as avaliações de uma resposta excluída (a nota some junto com a resposta)

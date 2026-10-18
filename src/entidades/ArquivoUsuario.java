@@ -5,6 +5,8 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
 
     HashExtensivel<ParEmailId> indiceEmail;
     private ArquivoPergunta arquivoPergunta;
+    private ArquivoResposta arquivoResposta;
+    private ArquivoAvaliacao arquivoAvaliacao;
 
     // Construtor que inicializa o arquivo de usuários e o índice de emails.
     public ArquivoUsuario() throws Exception {
@@ -18,6 +20,12 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
     // Define o arquivo de perguntas associado ao arquivo de usuários.
     public void setArquivoPergunta(ArquivoPergunta arquivoPergunta) {
         this.arquivoPergunta = arquivoPergunta;
+    }
+    public void setArquivoResposta(ArquivoResposta arquivoResposta) {
+        this.arquivoResposta = arquivoResposta;
+    }
+    public void setArquivoAvaliacao(ArquivoAvaliacao arquivoAvaliacao) {
+        this.arquivoAvaliacao = arquivoAvaliacao;
     }
 
     // Cria um novo usuário, garantindo que o email seja único.
@@ -111,6 +119,14 @@ public class ArquivoUsuario extends Arquivo<Usuario> {
         if(arquivoPergunta == null) {
             throw new Exception("Abra o arquivo de perguntas antes de excluir um usuário.");
         }
+        if (arquivoResposta == null) {
+            throw new Exception("Abra o arquivo de respostas antes de excluir um usuário.");
+        }
+        if (arquivoAvaliacao == null) {
+            throw new Exception("Abra o arquivo de avaliações antes de excluir um usuário.");
+        }
+        arquivoAvaliacao.excluirPorUsuario(id);
+        arquivoResposta.excluirPorUsuario(id);
 
         // Remove as perguntas e seus vínculos antes de excluir o autor
         arquivoPergunta.excluirPorUsuario(id);

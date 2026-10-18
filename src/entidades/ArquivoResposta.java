@@ -7,7 +7,8 @@ public class ArquivoResposta extends Arquivo<Resposta> {
 
     ArvoreBMais<ParIdId> relUsuarioResposta;
     ArvoreBMais<ParIdId> relPerguntaResposta;
-    
+    private ArquivoAvaliacao arquivoAvaliacao;
+
     /**
      * Construtor que inicializa o arquivo de respostas e os índices de relacionamento com usuários e perguntas.
      * Abre o arquivo de respostas e os índices do relacionamento usuário -> respostas e pergunta -> respostas
@@ -22,6 +23,10 @@ public class ArquivoResposta extends Arquivo<Resposta> {
         relPerguntaResposta = new ArvoreBMais<>(ParIdId.class.getConstructor(),
             5,
             "./dados/respostas/relPerguntaResposta.db");
+    }
+
+    public void setArquivoAvaliacao(ArquivoAvaliacao arquivoAvaliacao) {
+        this.arquivoAvaliacao = arquivoAvaliacao;
     }
 
     /**
@@ -78,32 +83,15 @@ public class ArquivoResposta extends Arquivo<Resposta> {
         return true;
     }
 
-    /**
-     * Armazena a avaliação de uma resposta, atualizando a nota e o número de avaliações.
-     * 
-     * @param idUsuario O ID do usuário que está avaliando a resposta
-     * @param idResposta O ID da resposta a ser avaliada
-     * @param avaliacao A avaliação da resposta (true para positiva, false para negativa)
-     * @return true se a avaliação foi registrada com sucesso, false caso contrário
-     * @throws Exception Se o usuário não for o dono da resposta ou se a resposta não existir
-     */
-    // TODO: Adicionar ligamento com o arquivo de avaliações. Parte 2
-    public boolean avaliar(int idUsuario, int idResposta, boolean avaliacao) throws Exception {
+    // Uso interno (ArquivoAvaliacao): soma deltas na nota e no número de avaliações da resposta
+    boolean ajustarNota(int idResposta, int deltaNota, int deltaAvaliacoes) throws Exception {
         Resposta respostaExistente = super.read(idResposta);
         if (respostaExistente == null) {
             return false;
         }
-        if (respostaExistente.getIdUsuario() == idUsuario) {
-            throw new Exception(
-                "Você não pode avaliar sua própria resposta."
-            );
-        }
-        short novaNota = (short) (respostaExistente.getNota() + (avaliacao ? 1 : -1));
-        short novoNumeroAvaliacoes = (short) (respostaExistente.getAvaliacoes() + 1);
-        respostaExistente.setNota(novaNota);
-        respostaExistente.setAvaliacoes(novoNumeroAvaliacoes);
-        super.update(respostaExistente);
-        return true;
+        respostaExistente.setNota((short) (respostaExistente.getNota() + deltaNota));
+        respostaExistente.setAvaliacoes((short) (respostaExistente.getAvaliacoes() + deltaAvaliacoes));
+        return super.update(respostaExistente);
     }
 
     /**
@@ -204,6 +192,9 @@ public class ArquivoResposta extends Arquivo<Resposta> {
     public boolean delete(int id) throws Exception {
         Resposta resposta = super.read(id);
         if(resposta != null) {
+            if (arquivoAvaliacao != null) {
+                arquivoAvaliacao.excluirPorResposta(id);
+            }
             relUsuarioResposta.delete(new ParIdId(resposta.getIdUsuario(), id));
             relPerguntaResposta.delete(new ParIdId(resposta.getIdPergunta(), id));
             return super.delete(id);

@@ -113,10 +113,10 @@ public class Avaliacao implements aed3.InterfaceRegistro {
     @Override 
     public String toString() {
         return String.format(
-            "Avaliacao{idAvaliacao=%d%n" +
-            "idUsuario=%d%n" +
-            "idResposta=%d%n" +
-            "avaliacao=%b%n",
+            "Avaliacao{ID = %d%n" +
+            "ID Usuario = %d%n" +
+            "ID Resposta = %d%n" +
+            "Avaliacao = %b}%n",
             idAvaliacao, idUsuario, idResposta, avaliacao
         );
     }

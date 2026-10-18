@@ -1,17 +1,23 @@
 import java.util.Scanner;
 import entidades.ArquivoUsuario;
 import entidades.ArquivoPergunta;
+import entidades.ArquivoResposta;
+import entidades.ArquivoAvaliacao;
 
 public class Principal {
 
     public static void main(String[] args) {
         ArquivoUsuario arqUsuarios = null;
         ArquivoPergunta arqPerguntas = null;
+        ArquivoResposta arqRespostas = null;
+        ArquivoAvaliacao arqAvaliacoes = null;
         
         try {
             // Inicializa as bases de dados
             arqUsuarios = new ArquivoUsuario();
             arqPerguntas = new ArquivoPergunta(arqUsuarios);
+            arqRespostas = new ArquivoResposta();
+            arqAvaliacoes = new ArquivoAvaliacao(arqRespostas);
 
             // Linha para amarrar a dependência do Delete!
             arqUsuarios.setArquivoPergunta(arqPerguntas);
@@ -32,6 +38,8 @@ public class Principal {
             try {
                 if (arqUsuarios != null) arqUsuarios.close();
                 if (arqPerguntas != null) arqPerguntas.close();
+                if (arqRespostas != null) arqRespostas.close();
+                if (arqAvaliacoes != null) arqAvaliacoes.close();
             } catch (Exception e) {
                 System.out.println("Erro ao fechar ficheiros: " + e.getMessage());
             }

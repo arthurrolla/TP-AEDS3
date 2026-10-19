@@ -15,6 +15,7 @@ public class ControlePergunta {
     private ArquivoPergunta arqPerguntas;
     private ArquivoUsuario arqUsuarios;
     private ArquivoResposta arqRespostas;
+    private ControleResposta controleResposta;
     
     // Vetor de associação (cache) para ligar o número do ecrã (1, 2, 3...) ao ID real no ficheiro
     private ArrayList<Pergunta> cachePerguntas; 
@@ -22,11 +23,13 @@ public class ControlePergunta {
     public ControlePergunta(
         ArquivoPergunta arqPerguntas,
         ArquivoUsuario arqUsuarios,
-        ArquivoResposta arqRespostas) {
+        ArquivoResposta arqRespostas,
+        ControleResposta controleResposta) {
 
         this.arqPerguntas = arqPerguntas;
         this.arqUsuarios = arqUsuarios;
         this.arqRespostas = arqRespostas;
+        this.controleResposta = controleResposta;
         this.cachePerguntas = new ArrayList<>();
     }
 
@@ -141,8 +144,7 @@ public class ControlePergunta {
 
             switch (opcao) {
                 case "A":
-                    listarPerguntas(scanner, idUsuarioLogado);
-                    Utilidades.pausar(scanner, "");
+                    consultarMinhasPerguntas(scanner, idUsuarioLogado);
                     break;
                 case "B":
                     incluirPergunta(scanner, idUsuarioLogado);
@@ -226,18 +228,21 @@ public class ControlePergunta {
         }
 
         System.out.print(Utilidades.COR_TEXTO + "Digite o número da pergunta que deseja ALTERAR (ou 0 para cancelar): " + Utilidades.RESET);
-        int numeroEscolhido = Integer.parseInt(scanner.nextLine().trim());
+        String entrada = scanner.nextLine().trim();
+        if (entrada.equals("0")) return;
 
-        if (numeroEscolhido == 0) return;
-        
+        int numeroEscolhido = Utilidades.lerNumero(entrada);
         if (numeroEscolhido < 1 || numeroEscolhido > cachePerguntas.size()) {
             Utilidades.pausar(scanner, "Número inválido.");
             return;
         }
 
-        // Obtém o ID real da pergunta através do vetor de associação (índice - 1)
-        Pergunta perguntaAlvo = cachePerguntas.get(numeroEscolhido - 1);
+        // Obtém a pergunta real através do vetor de associação (índice - 1)
+        alterarPerguntaSelecionada(scanner, idUsuarioLogado, cachePerguntas.get(numeroEscolhido - 1));
+    }
 
+    // Altera texto e palavras-chave de uma pergunta já escolhida
+    private void alterarPerguntaSelecionada(Scanner scanner, int idUsuarioLogado, Pergunta perguntaAlvo) throws Exception {
         if (!perguntaAlvo.isAtiva()) {
             Utilidades.pausar(scanner, "Não é possível alterar uma pergunta que já foi arquivada.");
             return;
@@ -253,13 +258,11 @@ public class ControlePergunta {
         String novasPalavras = scanner.nextLine().trim();
         if (novasPalavras.isEmpty()) novasPalavras = perguntaAlvo.getPalavrasChave();
 
-        // Chama o método específico de atualização segura do seu back-end
-        boolean sucesso = arqPerguntas.atualizarConteudo(idUsuarioLogado, perguntaAlvo.getId(), novoTexto, novasPalavras);
-        
-        if (sucesso) {
-            Utilidades.pausar(scanner, "Pergunta atualizada com sucesso.");
-        } else {
-            Utilidades.pausar(scanner, "Erro ao atualizar a pergunta.");
+        try {
+            boolean sucesso = arqPerguntas.atualizarConteudo(idUsuarioLogado, perguntaAlvo.getId(), novoTexto, novasPalavras);
+            Utilidades.pausar(scanner, sucesso ? "Pergunta atualizada com sucesso." : "Erro ao atualizar a pergunta.");
+        } catch (Exception e) {
+            Utilidades.pausar(scanner, "Erro: " + e.getMessage());
         }
     }
 
@@ -273,32 +276,124 @@ public class ControlePergunta {
         }
 
         System.out.print(Utilidades.COR_TEXTO + "Digite o número da pergunta que deseja ARQUIVAR (ou 0 para cancelar): " + Utilidades.RESET);
-        int numeroEscolhido = Integer.parseInt(scanner.nextLine().trim());
+        String entrada = scanner.nextLine().trim();
+        if (entrada.equals("0")) return;
 
-        if (numeroEscolhido == 0) return;
-
+        int numeroEscolhido = Utilidades.lerNumero(entrada);
         if (numeroEscolhido < 1 || numeroEscolhido > cachePerguntas.size()) {
             Utilidades.pausar(scanner, "Número inválido.");
             return;
         }
 
-        Pergunta perguntaAlvo = cachePerguntas.get(numeroEscolhido - 1);
+        arquivarPerguntaSelecionada(scanner, idUsuarioLogado, cachePerguntas.get(numeroEscolhido - 1));
+    }
 
-        System.out.print(Utilidades.COR_TEXTO + "Tem a certeza que deseja arquivar a pergunta nº " + numeroEscolhido + "? (S/N): " + Utilidades.RESET);
+    // Arquiva uma pergunta já escolhida. Retorna true se ela foi arquivada.
+    private boolean arquivarPerguntaSelecionada(Scanner scanner, int idUsuarioLogado, Pergunta perguntaAlvo) throws Exception {
+        System.out.print(Utilidades.COR_TEXTO + "\nTem certeza que deseja arquivar esta pergunta? (S/N): " + Utilidades.RESET);
         String confirmacao = scanner.nextLine().trim().toUpperCase();
-
-        if (confirmacao.equals("S")) {
-            // Chama o método seguro de arquivamento do seu back-end
+        if (!confirmacao.equals("S")) {
+            return false;
+        }
+        try {
             boolean sucesso = arqPerguntas.arquivar(idUsuarioLogado, perguntaAlvo.getId());
             if (sucesso) {
                 Utilidades.pausar(scanner, "Pergunta arquivada com sucesso! Ela deixará de receber respostas.");
             } else {
                 Utilidades.pausar(scanner, "Erro ao arquivar a pergunta ou ela já estava arquivada.");
             }
+            return sucesso;
+        } catch (Exception e) {
+            Utilidades.pausar(scanner, "Erro: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // A) LISTAR (versão com seleção): lista as perguntas do usuário e abre a escolhida
+    private void consultarMinhasPerguntas(Scanner scanner, int idUsuarioLogado) throws Exception {
+        while (true) {
+            listarPerguntas(scanner, idUsuarioLogado);
+            if (cachePerguntas.isEmpty()) {
+                Utilidades.pausar(scanner, "");
+                return;
+            }
+            System.out.println(Utilidades.COR_TEXTO + "Digite o número de uma pergunta para ver os detalhes e as respostas.");
+            System.out.println("\n(R) Retornar");
+            System.out.print("\nOpção: " + Utilidades.RESET);
+            String opcao = scanner.nextLine().trim().toUpperCase();
+            if (opcao.equals("R")) {
+                return;
+            }
+            int numero = Utilidades.lerNumero(opcao);
+            if (numero < 1 || numero > cachePerguntas.size()) {
+                Utilidades.pausar(scanner, "Opção inválida.");
+                continue;
+            }
+            visualizarMinhaPergunta(scanner, idUsuarioLogado, cachePerguntas.get(numero - 1).getId());
+        }
+    }
+
+    // Tela "Minha área > Minhas perguntas > Pergunta": dados da pergunta + respostas de outros usuários
+    private void visualizarMinhaPergunta(Scanner scanner, int idUsuarioLogado, int idPergunta) throws Exception {
+        String caminho = "> Início > Minha área > Minhas perguntas > Pergunta";
+        while (true) {
+            Pergunta pergunta = arqPerguntas.read(idPergunta);
+            if (pergunta == null) {
+                Utilidades.pausar(scanner, "Pergunta indisponível.");
+                return;
+            }
+            ArrayList<Resposta> respostas = arqRespostas.readAllByPergunta(idPergunta);
+
+            Utilidades.exibirCabecalho(caminho);
+            System.out.println(Utilidades.formatarData(pergunta.getCriacao())
+                + (pergunta.isAtiva() ? "" : "  [ARQUIVADA]"));
+            System.out.println(pergunta.getPergunta());
+            System.out.println("Palavras chave: " + pergunta.getPalavrasChave() + "\n");
+            controleResposta.mostrarRespostas(respostas, idUsuarioLogado);
+
+            System.out.println();
+            if (!respostas.isEmpty()) {
+                System.out.println("Digite o número de uma resposta para visualizá-la ou arquivá-la.\n");
+            }
+            if (pergunta.isAtiva()) {
+                System.out.println("(A) Alterar dados da pergunta");
+                System.out.println("(B) Arquivar pergunta");
+            }
+            System.out.println("(R) Retornar");
+            System.out.print("\nOpção: " + Utilidades.RESET);
+            String opcao = scanner.nextLine().trim().toUpperCase();
+
+            switch (opcao) {
+                case "A":
+                    if (pergunta.isAtiva()) {
+                        alterarPerguntaSelecionada(scanner, idUsuarioLogado, pergunta);
+                    } else {
+                        Utilidades.pausar(scanner, "Opção inválida.");
+                    }
+                    break;
+                case "B":
+                    if (pergunta.isAtiva()) {
+                        if (arquivarPerguntaSelecionada(scanner, idUsuarioLogado, pergunta)) return;
+                    } else {
+                        Utilidades.pausar(scanner, "Opção inválida.");
+                    }
+                    break;
+                case "R":
+                    return;
+                default:
+                    int numero = Utilidades.lerNumero(opcao);
+                    if (numero < 1 || numero > respostas.size()) {
+                        Utilidades.pausar(scanner, "Opção inválida.");
+                        break;
+                    }
+                    controleResposta.visualizarResposta(scanner, idUsuarioLogado,
+                        respostas.get(numero - 1).getId(), caminho);
+            }
         }
     }
 
     private void visualizarPergunta(Scanner scanner, int idUsuarioLogado, int idPergunta)throws Exception{
+        String caminho = "> Início > Buscar perguntas > Perguntas mais recentes > Pergunta";
         SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy 'às' HH:mm");
         while (true){
             Pergunta pergunta = arqPerguntas.read(idPergunta);
@@ -308,115 +403,39 @@ public class ControlePergunta {
             }
             Usuario autor = arqUsuarios.read(pergunta.getIdUsuario());
             String nomeAutor = autor != null? autor.getNome(): "Usuário indisponível";
+            // Já vem ordenada por nota (decrescente) a partir da árvore B+ de relacionamento
             ArrayList<Resposta> respostas = arqRespostas.readAllByPergunta(idPergunta);
 
-            Utilidades.limparEcra();
-            System.out.println(Utilidades.COR_ROSA + "AJUDA AÍ 1.0");
-            System.out.println("------------" + Utilidades.COR_TEXTO);
-            System.out.println("> Início > Buscar perguntas > Perguntas mais recentes > Pergunta\n");
+            Utilidades.exibirCabecalho(caminho);
             System.out.println(pergunta.getPergunta());
             System.out.println("Criada por " + nomeAutor + " em "+ formatador.format(new Date(pergunta.getCriacao())));
-            System.out.println("Palavras-chave: " + pergunta.getPalavrasChave());
-            System.out.println("\nRESPOSTAS");
-            System.out.println("---------");
-            if (respostas.isEmpty()){
-                System.out.println("Esta pergunta ainda não tem respostas.");
-            }
+            System.out.println("Palavras-chave: " + pergunta.getPalavrasChave() + "\n");
+            controleResposta.mostrarRespostas(respostas, idUsuarioLogado);
 
-            for (int i = 0; i < respostas.size(); i++) {
-                Resposta resposta = respostas.get(i);
-                Usuario autorResposta = arqUsuarios.read(resposta.getIdUsuario());
-                String nomeAutorResposta = autorResposta != null ? autorResposta.getNome() : "Usuário indisponível";
-                System.out.println("\n(" + (i + 1) + ") " + resposta.getResposta());
-                System.out.println("Respondido por " + nomeAutorResposta + " em " + formatador.format(new Date(resposta.getCriacao())));
-                System.out.println("Nota: " + resposta.getNota()+ " (" + resposta.getAvaliacoes() + " avaliações)");
+            System.out.println();
+            if (!respostas.isEmpty()) {
+                System.out.println("Digite o número de uma resposta para visualizá-la e avaliá-la.\n");
             }
-
-            System.out.println("\n(A) Responder à pergunta");
-            System.out.println("\n(R) Retornar");
+            System.out.println("(A) Responder à pergunta");
+            System.out.println("(R) Retornar");
             System.out.print("\nOpção: " + Utilidades.RESET);
             String opcao = scanner.nextLine().trim().toUpperCase();
 
             switch (opcao) {
                 case "A":
-                    responderPergunta(scanner, idUsuarioLogado, idPergunta);
+                    controleResposta.responderPergunta(scanner, idUsuarioLogado, idPergunta, caminho);
                     break;
-
                 case "R":
                     return;
                 default:
-                    int numero;
-
-                    try {
-                        numero = Integer.parseInt(opcao);
-                    } catch (NumberFormatException e) {
+                    int numero = Utilidades.lerNumero(opcao);
+                    if (numero < 1 || numero > respostas.size()) {
                         Utilidades.pausar(scanner, "Opção inválida.");
                         break;
                     }
-
-                    if (numero < 1 || numero > respostas.size()) {
-                        Utilidades.pausar(scanner, "Número inválido.");
-                        break;
-                    }
-                    Resposta selecionada = respostas.get(numero - 1);
-                    Utilidades.pausar(scanner,"Resposta selecionada: " + selecionada.getResposta());
+                    controleResposta.visualizarResposta(scanner, idUsuarioLogado,
+                        respostas.get(numero - 1).getId(), caminho);
             }
         }
-    }
-
-    private void responderPergunta(Scanner scanner, int idUsuarioLogado, int idPergunta)throws Exception{
-        Pergunta pergunta = arqPerguntas.read(idPergunta);
-        Usuario usuario = arqUsuarios.read(idUsuarioLogado);
-        if (usuario == null){
-            Utilidades.pausar(scanner, "Usuário indisponível.");
-            return;
-        }
-        if (pergunta == null || !pergunta.isAtiva()) {
-            Utilidades.pausar(scanner, "Esta pergunta não está disponível para respostas.");
-            return;
-        }
-
-        Usuario autor = arqUsuarios.read(pergunta.getIdUsuario());
-        String nomeAutor = autor != null? autor.getNome(): "Usuário indisponível";
-        SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy 'às' HH:mm");
-
-        Utilidades.limparEcra();
-        System.out.println(Utilidades.COR_ROSA + "AJUDA AÍ 1.0");
-        System.out.println("------------" + Utilidades.COR_TEXTO);
-        System.out.println("> Início > Buscar perguntas > Perguntas mais recentes"+ " > Pergunta > Responder\n");
-        System.out.println(pergunta.getPergunta());
-        System.out.println("Criada por " + nomeAutor + " em "+ formatador.format(new Date(pergunta.getCriacao())));
-        System.out.println("\nDigite sua resposta.");
-        System.out.println("Pode usar várias linhas e deixar linhas em branco.");
-        System.out.println("Para finalizar, digite /fim em uma linha separada.");
-        System.out.println("Para cancelar, digite /cancelar.");
-        System.out.println("\nResposta:" + Utilidades.RESET);
-
-        StringBuilder texto = new StringBuilder();
-        boolean primeiraLinha = true;
-
-        while (true) {
-            String linha = scanner.nextLine();
-            if (linha.trim().equalsIgnoreCase("/cancelar")) {
-                return;
-            }
-            if (linha.trim().equalsIgnoreCase("/fim")) {
-                break;
-            }
-            if (!primeiraLinha) {
-                texto.append("\n");
-            }
-            texto.append(linha);
-            primeiraLinha = false;
-        }
-
-        if (texto.toString().trim().isEmpty()) {
-            Utilidades.pausar(scanner, "A resposta não pode ficar vazia.");
-            return;
-        }
-
-        Resposta novaResposta = new Resposta(-1,idPergunta,idUsuarioLogado,System.currentTimeMillis(),texto.toString(),(short) 0,(short) 0,true);
-        arqRespostas.create(novaResposta);
-        Utilidades.pausar(scanner, "Resposta incluída com sucesso.");
     }
 }

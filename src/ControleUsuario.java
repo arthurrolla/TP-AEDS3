@@ -6,11 +6,13 @@ public class ControleUsuario {
 
     private ArquivoUsuario arqUsuarios;
     private ControlePergunta controlePergunta;
+    private ControleResposta controleResposta;
     private Usuario usuarioLogado = null;
 
-    public ControleUsuario(ArquivoUsuario arqUsuarios, ControlePergunta controlePergunta) {
+    public ControleUsuario(ArquivoUsuario arqUsuarios, ControlePergunta controlePergunta, ControleResposta controleResposta) {
         this.arqUsuarios = arqUsuarios;
         this.controlePergunta = controlePergunta;
+        this.controleResposta = controleResposta;
     }
 
     public void telaAcesso(Scanner scanner) throws Exception {
@@ -160,8 +162,10 @@ public class ControleUsuario {
                     controlePergunta.menuMinhasPerguntas(scanner, usuarioLogado.getId());
                     break;
                 case "C":
+                    controleResposta.menuMinhasRespostas(scanner, usuarioLogado.getId());
+                    break;
                 case "D":
-                    Utilidades.pausar(scanner, "Funcionalidade para as próximas etapas.");
+                    controleResposta.menuMinhasAvaliacoes(scanner, usuarioLogado.getId());
                     break;
                 case "R":
                     break;

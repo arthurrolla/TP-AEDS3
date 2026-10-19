@@ -26,8 +26,9 @@ public class Principal {
             arqUsuarios.setArquivoPergunta(arqPerguntas);
 
             // Inicializa os controladores com acesso aos arquivos correspondentes
-            ControlePergunta controlePergunta = new ControlePergunta(arqPerguntas, arqUsuarios, arqRespostas);
-            ControleUsuario controleUsuario = new ControleUsuario(arqUsuarios, controlePergunta);
+            ControleResposta controleResposta = new ControleResposta(arqRespostas, arqPerguntas, arqUsuarios, arqAvaliacoes);
+            ControlePergunta controlePergunta = new ControlePergunta(arqPerguntas, arqUsuarios, arqRespostas, controleResposta);
+            ControleUsuario controleUsuario = new ControleUsuario(arqUsuarios, controlePergunta, controleResposta);
 
             // Inicia o programa
             Scanner scanner = new Scanner(System.in);

@@ -24,7 +24,7 @@ public class Utilidades {
     // Limpa a tela e imprime o cabeçalho padrão seguido do caminho de navegação (breadcrumb)
     public static void exibirCabecalho(String caminho) {
         limparEcra();
-        System.out.println(COR_ROSA + "AJUDA AÍ 2.0"); // Atualizando Versão
+        System.out.println(COR_ROSA + "AJUDA AÍ 1.0"); // Atualizando Versão
         System.out.println("------------" + COR_TEXTO);
         System.out.println(caminho + "\n");
     }

@@ -1,8 +1,7 @@
 # Ajuda Aí 1.0
 
-Trabalho prático 1 da disciplina de Algoritmos e Estruturas de Dados III (AEDs III) da PUC Minas. 
-
-Este projeto é um sistema de perguntas e respostas executado no terminal. Todo o armazenamento é feito "do zero" utilizando ficheiros binários em Java, sem o uso de bases de dados prontas (como MySQL).
+Trabalho prático 2 — Relacionamento N:N  
+Disciplina de Algoritmos e Estruturas de Dados III (AEDs III) da PUC Minas.
 
 ## Integrantes
 
@@ -11,11 +10,11 @@ Este projeto é um sistema de perguntas e respostas executado no terminal. Todo 
 - Lucas Santiago Pereira
 - Matheus Arantes Coimbra
 
-## O que o sistema faz
+## Apresentação — Parte 2
 
-* **Usuários:** cadastro, login por e-mail e senha, recuperação de senha e consulta por e-mail usando um índice de hash extensível. As senhas são armazenadas como hashes SHA-256 acompanhados de salt.
-* **Perguntas:** Criação, listagem, edição e arquivamento das próprias perguntas.
-* **Relacionamento:** As perguntas são associadas a cada utilizador através de uma Árvore B+.
+O Ajuda Aí é um sistema de perguntas e respostas desenvolvido em Java, com interface textual no terminal e armazenamento em arquivos binários. O projeto utiliza um CRUD genérico, tabelas hash extensíveis e árvores B+.
+
+Esta etapa amplia o trabalho desenvolvido no TP1, acrescentando a consulta de perguntas recentes, o cadastro de respostas e o gerenciamento de avaliações. O relacionamento N:N entre usuários e perguntas é representado pela entidade Resposta, que identifica o usuário que respondeu e a pergunta correspondente.
 
 ## Como compilar e executar
 
@@ -25,113 +24,188 @@ Certifique-se de que tem o Java (JDK) instalado. Abra o terminal na pasta onde e
    ```bash
    javac -encoding UTF-8 Principal.java
    java Principal
+  ```
 
 
 ## Estrutura do projeto
 
-### Usuários
+### Índice de perguntas por data
 
-A classe `Usuario` representa os dados de cada usuário: ID, nome, e-mail, hash da senha, pergunta secreta e hash da resposta secreta. Ela implementa `InterfaceRegistro`, com os métodos `serialize()` e `deserialize()` para converter os dados em bytes e reconstruí-los durante a leitura.
+A classe `ArquivoPergunta` recebeu uma árvore B+ com entradas da classe `ParDataId`, que armazena a data de criação e o ID da pergunta. Esse índice permite consultar as perguntas ativas da mais recente para a mais antiga.
 
-A classe `ArquivoUsuario` estende `Arquivo<Usuario>` e gerencia a persistência dos usuários. O índice indireto de e-mail utiliza `HashExtensivel<ParEmailId>`, associando cada e-mail ao ID do usuário.
+### Respostas
 
-### Perguntas
+A classe `Resposta` contém os IDs da resposta, da pergunta e do usuário, além de data de criação, texto, nota, quantidade de avaliações e estado de atividade.
 
-A classe `Pergunta` contém ID, ID do usuário que criou a pergunta, datas de criação e alteração, nota, texto, palavras-chave e estado de atividade. Também implementa `InterfaceRegistro` para permitir seu armazenamento em arquivo. 
+A classe `ArquivoResposta` estende `Arquivo<Resposta>` e gerencia sua persistência. Duas árvores B+ armazenam os pares `(idUsuario, idResposta)` e `(idPergunta, idResposta)`, permitindo consultar respostas por usuário e por pergunta.
 
-A classe `ArquivoPergunta` estende `Arquivo<Pergunta>` e gerencia a inclusão, leitura, alteração e arquivamento das perguntas. Ela recebe uma referência a `ArquivoUsuario` para verificar se o usuário associado à pergunta existe antes de gravá-la.
+### Avaliações
 
-### Armazenamento e índices
+A classe `Avaliacao` contém os IDs da avaliação, do usuário e da resposta, além da indicação de avaliação positiva ou negativa.
 
-Os registros são armazenados em arquivos com uma lápide, um indicador de tamanho e os bytes da entidade. A classe `Arquivo` mantém um índice direto com `ParIDEndereco`, associando o ID à posição do registro no arquivo.
+A classe `ArquivoAvaliacao` estende `Arquivo<Avaliacao>` e mantém duas árvores B+ com os pares `(idUsuario, idAvaliacao)` e `(idResposta, idAvaliacao)`. Também utiliza `ArquivoResposta` para ajustar a nota e a quantidade de avaliações.
 
-Além dos índices diretos, o sistema utiliza:
-
-- **Índice de e-mail:** tabela hash extensível com `ParEmailId`, associando e-mail e ID do usuário.
-- **Índice do relacionamento:** árvore B+ com `ParIdId`, armazenando os pares `(idUsuario, idPergunta)` para localizar as perguntas de cada usuário.
+As entidades `Resposta` e `Avaliacao` implementam `InterfaceRegistro`, com os métodos `serialize()` e `deserialize()` para armazenamento em arquivos binários.
 
 ### Interface e controles
 
-A interface textual é organizada pelas classes `Principal`, `ControleUsuario`, `ControlePergunta` e `Utilidades`. A classe `Principal` inicializa os arquivos de usuários e perguntas, cria os controles e inicia a tela de acesso. A classe `ControleUsuario` organiza o cadastro, o login, a recuperação de senha e a navegação pelos menus “Minha área” e “Meus dados”, além de manter a referência ao usuário autenticado.
+A interface textual é organizada pelas classes `ControleUsuario`, `ControlePergunta` e `ControleResposta`. O `ControleUsuario` mantém o usuário autenticado e permite acessar os menus da área pessoal. O `ControlePergunta` organiza a busca paginada, a consulta das próprias perguntas e a visualização das respostas recebidas.
 
-A classe `ControlePergunta` apresenta as opções de inclusão, listagem, alteração e arquivamento das perguntas do usuário logado. Na listagem, utiliza números sequenciais e mantém uma associação com os IDs internos, permitindo selecionar uma pergunta sem expor seu identificador na tela. Já a classe `Utilidades` reúne recursos de apresentação, como cores, limpeza da tela e pausas para leitura das mensagens.
+O `ControleResposta` reúne as telas de cadastro e visualização de respostas, arquivamento, avaliação e cancelamento de avaliações. Também apresenta as opções “Minhas respostas” e “Minhas avaliações”, utilizando os métodos dos respectivos arquivos.
+
+A classe `Principal` inicializa os arquivos e conecta os controles. A classe `Utilidades` reúne funções de apresentação, formatação de datas e tratamento de entradas numéricas.
 
 ## Funcionalidades implementadas
 
-### Cadastro, consulta e alteração de usuários
+### Busca de perguntas recentes
 
-O cadastro de usuários gera automaticamente o ID e registra o e-mail no índice indireto. Antes da gravação, o CRUD verifica se o e-mail está vazio, se respeita o tamanho permitido pelo índice e se já está cadastrado. A consulta por e-mail busca o endereço completo e retorna o usuário correspondente ou `null`.
+A busca utiliza uma árvore B+ que organiza as perguntas ativas em ordem decrescente de data de criação. Os resultados são apresentados em páginas de cinco perguntas, com opções para avançar e retornar. Cada pergunta aparece com seu texto, nome do autor e data de criação, sendo selecionada por um número da listagem, sem expor o ID interno. A opção de busca por palavras-chave aparece no menu, mas não é implementada nesta etapa, conforme o enunciado.
 
-Na alteração do e-mail, o sistema verifica a disponibilidade do novo endereço e atualiza o índice, preservando o ID original. Na interface atual, o menu “Meus dados” permite alterar nome e e-mail, enquanto as opções de alteração de senha e de pergunta e resposta secreta ainda apresentam a mensagem de funcionalidade em desenvolvimento.
+### Visualização da pergunta e de suas respostas
 
-*(captura de tela mostrando o cadastro de um usuário no terminal)*
-![Cadastro de Usuário](imagens/cadastro_usuario.png)
+Ao selecionar uma pergunta na busca, o usuário visualiza seu texto, autor, data de criação e palavras-chave, além das respostas ativas associadas a ela. As respostas são consultadas pelo relacionamento em árvore B+ e apresentadas em ordem decrescente de nota. Cada resposta mostra o nome de quem a escreveu, a data, a nota e a quantidade de avaliações recebidas.
 
-### Login e recuperação de senha
+### Cadastro de respostas
 
-O login consulta o usuário pelo e-mail e verifica a senha informada. Quando o acesso é validado, o controle mantém a referência ao usuário autenticado e apresenta o menu principal. A opção “Esqueci a minha senha” solicita o e-mail e apresenta a pergunta secreta cadastrada. Se a resposta for validada, permite definir uma nova senha e grava a atualização no arquivo de usuários. A senha e a resposta secreta são armazenadas como hashes SHA-256 acompanhados de salts aleatórios, sem guardar os textos originais. Os métodos de verificação utilizam o salt armazenado para conferir os dados informados. Antes do cálculo do hash da resposta secreta, são removidos os acentos e as letras são convertidas para minúsculas. Assim, respostas como “São Paulo” e “sao paulo” são consideradas equivalentes.
+Na tela de responder, a pergunta é reapresentada para que o usuário saiba a qual conteúdo está respondendo. O texto pode conter várias linhas e parágrafos, utilizando `/fim` para concluir ou `/cancelar` para retornar sem gravar. O sistema associa a resposta à pergunta selecionada e ao usuário autenticado, gera seu ID e define automaticamente a data, a nota inicial zero, a quantidade de avaliações zero e o estado ativo. Antes da gravação, o CRUD verifica se o usuário e a pergunta existem, se a pergunta está ativa e se o texto foi preenchido.
 
-*(captura de tela mostrando o fluxo de recuperação de senha)*
-![Recuperação de Senha](imagens/recuperacao_senha.png)
+### Arquivamento de respostas
 
-### Inclusão, listagem, alteração e arquivamento de perguntas
+O CRUD permite que uma resposta seja arquivada por seu próprio autor ou pelo autor da pergunta à qual ela pertence. A operação altera o estado da resposta para inativa, mantendo o registro e seus vínculos armazenados, mas retirando-a das listagens por pergunta e por usuário. A alteração direta do texto e a exclusão direta são bloqueadas; para corrigir uma resposta, o usuário deve arquivá-la e cadastrar outra.O arquivamento está disponível no detalhe da resposta, com confirmação antes da operação. O autor pode acessar suas respostas pela opção “Minhas respostas”, enquanto o autor da pergunta pode gerenciar as respostas recebidas em “Minhas perguntas”.
 
-Na inclusão pela interface, o usuário informa o texto e as palavras-chave. O controle utiliza o ID do usuário autenticado, preenche as datas com o horário atual, define a nota inicial como zero e marca a pergunta como ativa. O CRUD gera o ID da pergunta automaticamente. A listagem consulta a árvore B+ para recuperar as perguntas vinculadas ao usuário logado. A tela apresenta números sequenciais, data, texto e palavras-chave.
+### Integridade dos relacionamentos
 
-*(captura de tela mostrando a listagem de perguntas de um usuário, com destaque para a numeração sequencial e o status de arquivamento)*
-![Listagem de Perguntas](imagens/listagem_perguntas.png)
+As respostas mantêm vínculos com seus usuários e perguntas por meio de duas árvores B+, enquanto as avaliações possuem índices por usuário e por resposta. Na exclusão interna de um usuário, suas avaliações são canceladas, revertendo os efeitos nas notas e nos contadores das respostas preservadas. Também são removidas suas respostas, suas perguntas e as respostas recebidas nessas perguntas, incluindo as arquivadas, com a limpeza das avaliações e dos índices correspondentes. O arquivamento, por sua vez, mantém os registros e seus relacionamentos.
 
-As perguntas arquivadas recebem a indicação `ARQUIVADA`. A alteração permite modificar o texto e as palavras-chave, atualizando a data de alteração. A interface impede a edição de perguntas já arquivadas. O arquivamento define `ativa` como `false`, mantendo a pergunta armazenada e vinculada ao usuário que a criou. As perguntas arquivadas continuam disponíveis na consulta das próprias perguntas. Não há operação de desarquivamento, e a exclusão comum de perguntas é bloqueada.
+### Avaliação e cancelamento de avaliações
 
-### Relacionamento 1:N e integridade dos dados
+Ao visualizar uma resposta de outro usuário, é possível concordar ou discordar dela. Uma avaliação positiva acrescenta um ponto à nota, enquanto uma negativa retira um ponto; nos dois casos, a quantidade de avaliações aumenta em uma unidade. Após votar, a interface informa a avaliação realizada e não oferece uma nova votação na mesma resposta.
 
-Cada pergunta possui o atributo `idUsuario`, que identifica o usuário que a criou. Um usuário pode possuir várias perguntas, enquanto cada pergunta pertence a um único usuário. Antes de gravar uma pergunta, `ArquivoPergunta` consulta o arquivo de usuários para verificar se o usuário associado existe. Após a inclusão, registra o par `(idUsuario, idPergunta)` na árvore B+.
+O cancelamento é realizado em “Minhas avaliações”, mediante confirmação. A operação remove a avaliação e desfaz seu efeito na nota e na quantidade de avaliações da resposta. Para avaliar novamente, o usuário deve retornar à resposta e registrar um novo voto.
 
-As operações de alteração e arquivamento verificam se o ID do usuário solicitante corresponde ao usuário que criou a pergunta. A interface fornece esse ID a partir do usuário autenticado. Na exclusão de um usuário pelo CRUD, o sistema remove suas perguntas, inclusive as arquivadas, e os respectivos vínculos na árvore antes de excluir o usuário e sua entrada no índice de e-mail. Essa rotina não está exposta como uma opção nos menus.
+### Gestão pela área pessoal
+
+Em “Minhas respostas”, o usuário consulta suas respostas ativas e pode selecionar uma delas para visualizar o texto completo, a pergunta correspondente e a opção de arquivamento. Em “Minhas avaliações”, são apresentadas suas avaliações associadas a respostas ativas, permitindo consultar o voto realizado e cancelá-lo.
+
+A opção “Minhas perguntas” permite selecionar uma pergunta própria e visualizar as respostas recebidas, ordenadas por nota. Além de alterar ou arquivar a pergunta, seu autor pode abrir uma resposta recebida e arquivá-la, mediante confirmação.
+
+## Telas do sistema
+
+### Busca de perguntas recentes
+
+Listagem das perguntas ativas em ordem decrescente de data de criação, com cinco perguntas por página e opções de navegação.
+
+![Primeira página de perguntas recentes](imagens/tp2_perguntas_recentes.png)
+
+A página seguinte apresenta a continuação dos resultados.
+
+![Segunda página de perguntas recentes](imagens/tp2_perguntas_recentes_pagina2.png)
+
+### Pergunta e respostas
+
+Detalhe de uma pergunta, com as respostas ativas ordenadas por nota, identificação dos autores e quantidade de avaliações.
+
+![Pergunta com suas respostas](imagens/tp2_pergunta_respostas.png)
+
+### Cadastro de resposta
+
+Tela de inclusão de uma resposta, mantendo a pergunta visível e permitindo escrever várias linhas de texto.
+
+![Cadastro de resposta](imagens/tp2_cadastro_resposta.png)
+
+### Visualização e avaliação de uma resposta
+
+Ao abrir uma resposta de outro usuário, são apresentadas as opções de concordar ou discordar.
+
+![Avaliação de uma resposta](imagens/tp2_avaliar_resposta.png)
+
+### Minhas respostas
+
+Na área pessoal, o usuário consulta as respostas que escreveu.
+
+![Listagem das próprias respostas](imagens/tp2_minhas_respostas.png)
+
+Ao selecionar uma resposta própria, visualiza a pergunta correspondente e a opção de arquivamento.
+
+![Detalhe de uma resposta própria](imagens/tp2_resposta_propria.png)
+
+### Minhas avaliações
+
+A área pessoal apresenta as respostas avaliadas pelo usuário.
+
+![Listagem das avaliações realizadas](imagens/tp2_minhas_avaliacoes.png)
+
+O detalhe mostra a pergunta, a resposta e a avaliação realizada, com a opção de cancelar a avaliação.
+
+![Detalhe e cancelamento de uma avaliação](imagens/tp2_cancelar_avaliacao.png)
+
+### Respostas recebidas em minhas perguntas
+
+Ao abrir uma pergunta própria, o usuário visualiza as respostas recebidas e as opções de alterar ou arquivar a pergunta.
+
+![Pergunta própria com respostas recebidas](imagens/tp2_minha_pergunta.png)
+
+O autor da pergunta também pode selecionar e arquivar uma resposta recebida.
+
+![Arquivamento de uma resposta recebida](imagens/tp2_arquivar_resposta_recebida.png)
 
 ## Checklist
 
-- **Há um CRUD de usuários (que estende a classe Arquivo, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade) que funciona corretamente?**
+- Há uma listagem paginada de perguntas, que mostra as perguntas em ordem decrescente de data a partir de uma Árvore B+ acrescentada ao CRUD de Perguntas?
 
-  ```text
-  SIM
-  ```
+  ```SIM```
 
-- **Há um CRUD de perguntas (que estende a classe Arquivo, acrescentando Tabelas Hash Extensíveis e Árvores B+ como índices diretos e indiretos conforme necessidade) que funciona corretamente?**
+- Há uma listagem das respostas a uma pergunta selecionada, em ordem decrescente de nota?
 
-  ```text
-  SIM
-  ```
-  
-- **As perguntas estão vinculadas aos usuários usando o idUsuario como chave estrangeira?**
+  ```SIM```
 
-  ```text
-  SIM
-  ```
-  
-- **Há uma árvore B+ que registre o relacionamento 1:N entre usuários e perguntas?**
+- O usuário pode responder a uma pergunta?
 
-  ```text
-  SIM
-  ```
+  ```SIM```
 
-- **O trabalho compila corretamente?**
+- O usuário pode arquivar a própria resposta?
 
-  ```text
-  SIM
-  ```
+  ```SIM```
 
-- **O trabalho está completo e funcionando sem erros de execução?**
+- O usuário pode avaliar uma resposta?
 
-  ```text
-   NÃO. As opções de alteração de senha e de pergunta/resposta secreta em “Meus dados” ainda estão em desenvolvimento. Entradas não numéricas na seleção de perguntas também podem encerrar o programa.
-   ```
+  ```SIM```
 
-- **O trabalho é original e não a cópia de um trabalho de outro grupo?**
+- Na área do usuário, o usuário pode visualizar as respostas às suas perguntas?
 
-  ```text
-  SIM
-  ```
+  ```SIM```
+
+- Na área do usuário, o usuário pode arquivar uma resposta de outro usuário a uma das suas perguntas?
+
+  ```SIM```
+
+- Na área do usuário, o usuário pode visualizar e arquivar as respostas que escreveu?
+
+  ```SIM```
+
+- Na área do usuário, o usuário pode visualizar e arquivar a avaliação que realizou em uma resposta?
+
+  ```SIM```
+
+- A integridade do relacionamento entre perguntas e respostas está mantida em todas as operações?
+
+  ```Pendente da conclusão da revisão```
+
+- A integridade do relacionamento entre respostas e avaliações está mantida em todas as operações?
+
+  ```NÃO, enquanto persistirem as falhas conhecidas```
+
+- O trabalho compila corretamente?
+
+  ```SIM```
+
+- O trabalho está completo e funcionando sem erros de execução?
+
+  ```NÃO, ainda existem pendências```
+
+- O trabalho é original e não a cópia de um trabalho de outro grupo?
+
+  ```SIM```
 
 ### Vídeo de Demonstração
-  - **Link do Youtube**: https://youtu.be/V7aLG8FnlTk
+  - **Link do Youtube**: 

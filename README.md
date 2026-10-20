@@ -24,7 +24,7 @@ Certifique-se de que tem o Java (JDK) instalado. Abra o terminal na pasta onde e
    ```bash
    javac -encoding UTF-8 Principal.java
    java Principal
-  ```
+   ```
 
 
 ## Estrutura do projeto

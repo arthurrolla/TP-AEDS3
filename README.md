@@ -93,61 +93,39 @@ A opção “Minhas perguntas” permite selecionar uma pergunta própria e visu
 
 ### Busca de perguntas recentes
 
-Listagem das perguntas ativas em ordem decrescente de data de criação, com cinco perguntas por página e opções de navegação.
+Perguntas ativas em ordem decrescente de data de criação, com cinco perguntas por página e opções de navegação.
 
-![Primeira página de perguntas recentes](imagens/tp2_perguntas_recentes.png)
-
-A página seguinte apresenta a continuação dos resultados.
-
-![Segunda página de perguntas recentes](imagens/tp2_perguntas_recentes_pagina2.png)
+![Perguntas recentes](imagens/tp2_perguntas_recentes.png)
 
 ### Pergunta e respostas
 
-Detalhe de uma pergunta, com as respostas ativas ordenadas por nota, identificação dos autores e quantidade de avaliações.
+Detalhe da pergunta com suas respostas ativas, ordenadas por nota, mostrando autoria, data e quantidade de avaliações.
 
-![Pergunta com suas respostas](imagens/tp2_pergunta_respostas.png)
+![Pergunta e respostas](imagens/tp2_pergunta_respostas.png)
 
 ### Cadastro de resposta
 
-Tela de inclusão de uma resposta, mantendo a pergunta visível e permitindo escrever várias linhas de texto.
+Tela de inclusão de uma resposta com várias linhas de texto. O comando `/fim` finaliza a entrada e `/cancelar` permite retornar sem gravar.
 
 ![Cadastro de resposta](imagens/tp2_cadastro_resposta.png)
 
-### Visualização e avaliação de uma resposta
+### Resposta própria
 
-Ao abrir uma resposta de outro usuário, são apresentadas as opções de concordar ou discordar.
+Na área pessoal, o usuário pode visualizar uma resposta que escreveu, junto da pergunta correspondente, e arquivá-la.
 
-![Avaliação de uma resposta](imagens/tp2_avaliar_resposta.png)
+![Detalhe da resposta própria](imagens/tp2_resposta_propria.png)
 
-### Minhas respostas
+### Avaliação e arquivamento de resposta recebida
 
-Na área pessoal, o usuário consulta as respostas que escreveu.
+Ao visualizar uma resposta de outro usuário, são apresentadas as opções de concordar ou discordar. Nesta tela, a usuária também é autora da pergunta e, por isso, pode arquivar a resposta recebida.
 
-![Listagem das próprias respostas](imagens/tp2_minhas_respostas.png)
+![Avaliação e arquivamento de resposta](imagens/tp2_avaliar_resposta.png)
 
-Ao selecionar uma resposta própria, visualiza a pergunta correspondente e a opção de arquivamento.
+### Consulta e cancelamento de avaliação
 
-![Detalhe de uma resposta própria](imagens/tp2_resposta_propria.png)
+Em “Minhas avaliações”, o usuário visualiza a pergunta, a resposta avaliada e o voto realizado, com a opção de cancelar a avaliação.
 
-### Minhas avaliações
-
-A área pessoal apresenta as respostas avaliadas pelo usuário.
-
-![Listagem das avaliações realizadas](imagens/tp2_minhas_avaliacoes.png)
-
-O detalhe mostra a pergunta, a resposta e a avaliação realizada, com a opção de cancelar a avaliação.
-
-![Detalhe e cancelamento de uma avaliação](imagens/tp2_cancelar_avaliacao.png)
-
-### Respostas recebidas em minhas perguntas
-
-Ao abrir uma pergunta própria, o usuário visualiza as respostas recebidas e as opções de alterar ou arquivar a pergunta.
-
-![Pergunta própria com respostas recebidas](imagens/tp2_minha_pergunta.png)
-
-O autor da pergunta também pode selecionar e arquivar uma resposta recebida.
-
-![Arquivamento de uma resposta recebida](imagens/tp2_arquivar_resposta_recebida.png)
+![Detalhe da avaliação](imagens/tp2_cancelar_avaliacao.png)
 
 ## Checklist
 

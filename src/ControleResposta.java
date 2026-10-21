@@ -335,12 +335,12 @@ public class ControleResposta {
                 Utilidades.pausar(scanner, "Opção inválida.");
                 continue;
             }
-            visualizarAvaliacao(scanner, avaliacoes.get(numero - 1).getId(), caminho);
+            visualizarAvaliacao(scanner,idUsuarioLogado,avaliacoes.get(numero - 1).getId(),caminho);
         }
     }
 
     // Tela de uma avaliação: pergunta, resposta avaliada e a avaliação feita. Única ação: cancelar.
-    private void visualizarAvaliacao(Scanner scanner, int idAvaliacao, String caminho) throws Exception {
+    private void visualizarAvaliacao(Scanner scanner,int idUsuarioLogado, int idAvaliacao, String caminho) throws Exception {
         while (true) {
             Avaliacao avaliacao = arqAvaliacoes.read(idAvaliacao);
             Resposta resposta = avaliacao != null ? arqRespostas.read(avaliacao.getIdResposta()) : null;
@@ -374,7 +374,7 @@ public class ControleResposta {
                     System.out.print(Utilidades.COR_TEXTO + "\nTem certeza que deseja cancelar esta avaliação? (S/N): " + Utilidades.RESET);
                     if (scanner.nextLine().trim().equalsIgnoreCase("S")) {
                         try {
-                            if (arqAvaliacoes.cancelar(idAvaliacao)) {
+                            if (arqAvaliacoes.cancelar(idUsuarioLogado, idAvaliacao)) {
                                 Utilidades.pausar(scanner, "Avaliação cancelada. A nota da resposta foi ajustada.");
                                 return;
                             }

@@ -167,11 +167,11 @@ Em “Minhas avaliações”, o usuário visualiza a pergunta, a resposta avalia
 
 - A integridade do relacionamento entre perguntas e respostas está mantida em todas as operações?
 
-  ```Pendente da conclusão da revisão```
+  ```SIM
 
 - A integridade do relacionamento entre respostas e avaliações está mantida em todas as operações?
 
-  ```NÃO, enquanto persistirem as falhas conhecidas```
+  ```SIM```
 
 - O trabalho compila corretamente?
 

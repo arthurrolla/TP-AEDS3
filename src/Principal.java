@@ -19,7 +19,7 @@ public class Principal {
             arqRespostas = new ArquivoResposta(arqUsuarios, arqPerguntas);
             arqPerguntas.setArquivoResposta(arqRespostas);
             arqUsuarios.setArquivoResposta(arqRespostas);
-            arqAvaliacoes = new ArquivoAvaliacao(arqRespostas);
+            arqAvaliacoes = new ArquivoAvaliacao(arqRespostas, arqUsuarios);
             arqUsuarios.setArquivoAvaliacao(arqAvaliacoes);
 
             // Linha para amarrar a dependência do Delete!

@@ -167,7 +167,7 @@ Em “Minhas avaliações”, o usuário visualiza a pergunta, a resposta avalia
 
 - A integridade do relacionamento entre perguntas e respostas está mantida em todas as operações?
 
-  ```SIM
+  ```SIM```
 
 - A integridade do relacionamento entre respostas e avaliações está mantida em todas as operações?
 
@@ -179,7 +179,7 @@ Em “Minhas avaliações”, o usuário visualiza a pergunta, a resposta avalia
 
 - O trabalho está completo e funcionando sem erros de execução?
 
-  ```NÃO, ainda existem pendências```
+  ```SIM, considerando as funcionalidades implementadas e os testes realizados pelo grupo.```
 
 - O trabalho é original e não a cópia de um trabalho de outro grupo?
 

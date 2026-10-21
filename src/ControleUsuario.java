@@ -212,12 +212,88 @@ public class ControleUsuario {
                     arqUsuarios.update(usuarioLogado);
                     Utilidades.pausar(scanner, "Email alterado com sucesso!");
                 } 
+             } else if (opcao.equals("C")) {
+                alterarSenha(scanner);
+            } else if (opcao.equals("D")) {
+                alterarRecuperacao(scanner);
             } else if (!opcao.equals("R")) {
-                    Utilidades.pausar(scanner, "Opção de alteração em desenvolvimento.");
+                Utilidades.pausar(scanner, "Opção inválida.");
             }
         } while (!opcao.equals("R"));
     }
 
+    private void alterarSenha(Scanner scanner) throws Exception {
+        Usuario usuario = arqUsuarios.read(usuarioLogado.getId());
+        if (usuario == null) {
+            Utilidades.pausar(scanner, "Usuário não encontrado.");
+            return;
+        }
+        System.out.print("Senha atual: ");
+        String senhaAtual = scanner.nextLine().trim();
+        if (!usuario.verificarSenha(senhaAtual)) {
+            Utilidades.pausar(scanner, "Senha atual incorreta.");
+            return;
+        }
+        System.out.print("Nova senha: ");
+        String novaSenha = scanner.nextLine().trim();
+        if (novaSenha.isEmpty()) {
+            Utilidades.pausar(scanner, "A nova senha não pode ficar vazia.");
+            return;
+        }
+        System.out.print("Confirme a nova senha: ");
+        String confirmacao = scanner.nextLine().trim();
+        if (!novaSenha.equals(confirmacao)) {
+            Utilidades.pausar(scanner, "As senhas não coincidem.");
+            return;
+        }
+        usuario.setHashSenha(novaSenha);
+        if (arqUsuarios.update(usuario)) {
+            usuarioLogado = usuario;
+            Utilidades.pausar(scanner, "Senha alterada com sucesso!");
+        } else {
+            Utilidades.pausar(scanner, "Não foi possível alterar a senha.");
+        }
+    }
+
+    private void alterarRecuperacao(Scanner scanner) throws Exception {
+        Usuario usuario = arqUsuarios.read(usuarioLogado.getId());
+        if (usuario == null) {
+            Utilidades.pausar(scanner, "Usuário não encontrado.");
+            return;
+        }
+
+        System.out.print("Senha atual: ");
+        String senhaAtual = scanner.nextLine().trim();
+
+        if (!usuario.verificarSenha(senhaAtual)) {
+            Utilidades.pausar(scanner, "Senha atual incorreta.");
+            return;
+        }
+
+        System.out.print("Nova pergunta secreta: ");
+        String novaPergunta = scanner.nextLine().trim();
+
+        System.out.print("Nova resposta secreta: ");
+        String novaResposta = scanner.nextLine().trim();
+
+        if (novaPergunta.isEmpty() || novaResposta.isEmpty()) {
+            Utilidades.pausar(scanner,
+                "A pergunta e a resposta não podem ficar vazias.");
+            return;
+        }
+
+        usuario.setPerguntaSecreta(novaPergunta);
+        usuario.setHashPerguntaSecreta(novaResposta);
+
+        if (arqUsuarios.update(usuario)) {
+            usuarioLogado = usuario;
+            Utilidades.pausar(scanner,
+                "Pergunta e resposta secreta alteradas com sucesso!");
+        } else {
+            Utilidades.pausar(scanner,
+                "Não foi possível alterar os dados de recuperação.");
+        }
+    }
     // Método exclusivo para o programador testar o banco de dados
     private void listarTodosUsuariosDebug(Scanner scanner) {
         Utilidades.limparEcra();

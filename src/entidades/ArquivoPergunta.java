@@ -9,6 +9,7 @@ public class ArquivoPergunta extends Arquivo<Pergunta> {
     ArvoreBMais<ParDataId> indiceDataPergunta;
     private ArquivoUsuario arquivoUsuario;
     private ArquivoResposta arquivoResposta;
+    private IndicePerguntas indicePalavrasChave;
 
     // Abre o arquivo de perguntas e o índice do relacionamento usuário -> perguntas
     public ArquivoPergunta(ArquivoUsuario arquivoUsuario) throws Exception {
@@ -16,6 +17,7 @@ public class ArquivoPergunta extends Arquivo<Pergunta> {
         this.arquivoUsuario = arquivoUsuario;
         relUsuarioPergunta = new ArvoreBMais<>(ParIdId.class.getConstructor(),5,"./dados/perguntas/relUsuarioPergunta.db");
         indiceDataPergunta = new ArvoreBMais<>(ParDataId.class.getConstructor(),5,"./dados/perguntas/indiceDataPergunta.db");
+        indicePalavrasChave = new IndicePerguntas();
         arquivoUsuario.setArquivoPergunta(this);
         indexarPerguntasExistentes();
     }
@@ -23,7 +25,8 @@ public class ArquivoPergunta extends Arquivo<Pergunta> {
         this.arquivoResposta = arquivoResposta;
     }
 
-    // Inclui no índice por data as perguntas ativas já existentes
+    // Inclui nos índices (por data e por palavras-chave) as perguntas ativas já existentes.
+    // Pode ser repetido a cada abertura do programa sem duplicar nada.
     private void indexarPerguntasExistentes() throws Exception{
         ArrayList<ParIdId> pares = relUsuarioPergunta.read(null);
         for(ParIdId par : pares){
@@ -33,6 +36,7 @@ public class ArquivoPergunta extends Arquivo<Pergunta> {
                 if (indiceDataPergunta.read(chave).isEmpty()){
                     indiceDataPergunta.create(chave);
                 }
+                indicePalavrasChave.incluir(pergunta);
             }
         }
     }
@@ -50,6 +54,7 @@ public class ArquivoPergunta extends Arquivo<Pergunta> {
         relUsuarioPergunta.create(new ParIdId(novaPergunta.getIdUsuario(), idGerado));
         if(novaPergunta.isAtiva()){
             indiceDataPergunta.create(new ParDataId(novaPergunta.getCriacao(), idGerado));
+            indicePalavrasChave.incluir(novaPergunta);
         }
         return idGerado;
     }
@@ -65,10 +70,16 @@ public class ArquivoPergunta extends Arquivo<Pergunta> {
                 "Você só pode alterar suas próprias perguntas."
             );
         }
+        String palavrasAntigas = perguntaExistente.getPalavrasChave();
         perguntaExistente.setPergunta(novoTexto);
         perguntaExistente.setPalavrasChave(novasPalavras);
         perguntaExistente.setAlteracao(System.currentTimeMillis());
-        return super.update(perguntaExistente);
+        boolean atualizou = super.update(perguntaExistente);
+        // Perguntas arquivadas não estão no índice, então só as ativas são reindexadas
+        if (atualizou && perguntaExistente.isAtiva()) {
+            indicePalavrasChave.atualizar(idPergunta, palavrasAntigas, perguntaExistente);
+        }
+        return atualizou;
     }
 
     // Marca a pergunta como arquivada
@@ -90,6 +101,7 @@ public class ArquivoPergunta extends Arquivo<Pergunta> {
         boolean atualizou = super.update(perguntaExistente);
         if(atualizou){
             indiceDataPergunta.delete(new ParDataId(perguntaExistente.getCriacao(),perguntaExistente.getId()));
+            indicePalavrasChave.remover(perguntaExistente);
         }
         return atualizou;
     }
@@ -121,6 +133,18 @@ public class ArquivoPergunta extends Arquivo<Pergunta> {
         return perguntas;
     }
 
+    // Busca perguntas ativas pelas palavras-chave, da mais para a menos relevante (TFxIDF)
+    public ArrayList<Pergunta> buscarPorPalavrasChave(String consulta) throws Exception {
+        ArrayList<Pergunta> encontradas = new ArrayList<>();
+        for (IndicePerguntas.Resultado r : indicePalavrasChave.buscar(consulta)) {
+            Pergunta pergunta = super.read(r.idPergunta);
+            if (pergunta != null && pergunta.isAtiva()) {
+                encontradas.add(pergunta);
+            }
+        }
+        return encontradas;
+    }
+
     // Busca todas as perguntas de um usuário usando a árvore B+
     public ArrayList<Pergunta> readAllByUsuario(int idUsuario) throws Exception {
         ArrayList<Pergunta> perguntasDoUsuario = new ArrayList<>();
@@ -150,11 +174,25 @@ public class ArquivoPergunta extends Arquivo<Pergunta> {
                 throw new Exception("Não foi possível excluir uma pergunta do usuário.");
             }
             indiceDataPergunta.delete(new ParDataId(pergunta.getCriacao(), pergunta.getId()));
+            indicePalavrasChave.remover(pergunta);
             boolean removeuVinculo = relUsuarioPergunta.delete(new ParIdId(idUsuario, pergunta.getId()));
             if(!removeuVinculo) {
                 throw new Exception("Não foi possível remover o vínculo da pergunta.");
             }
         }
+    }
+
+    // Fecha o arquivo de perguntas e o índice de palavras-chave
+    @Override
+    public void close() throws java.io.IOException {
+        try {
+            indicePalavrasChave.close();
+        } catch (java.io.IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new java.io.IOException(e);
+        }
+        super.close();
     }
 
     // Bloqueado: alteração deve passar por atualizarConteudo() ou arquivar()

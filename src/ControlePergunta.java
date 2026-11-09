@@ -51,7 +51,7 @@ public class ControlePergunta {
                     listarPerguntasRecentes(scanner, idUsuarioLogado);
                     break;
                 case "B":
-                    // buscarPorPalavrasChave(scanner, idUsuarioLogado);
+                    buscarPorPalavrasChave(scanner, idUsuarioLogado);
                     break;
                 case "R":
                     break;
@@ -123,6 +123,34 @@ public class ControlePergunta {
                     Pergunta selecionada = perguntas.get(numero - 1);
                     visualizarPergunta(scanner, idUsuarioLogado, selecionada.getId());
             }
+        }
+    }
+
+    private void buscarPorPalavrasChave(Scanner scanner, int idUsuarioLogado) throws Exception {
+        boolean novaBusca = true;
+        
+        while (novaBusca) {
+            Utilidades.limparEcra();
+            System.out.println(Utilidades.COR_ROSA + "AJUDA AÍ 1.0");
+            System.out.println("------------" + Utilidades.COR_TEXTO);
+            System.out.println("> Início > Buscar perguntas > Busca por palavras-chave\n");
+            
+            System.out.println("Digite as palavras-chave para a busca (ou deixe em branco para cancelar):");
+            System.out.print("\nTermos: " + Utilidades.RESET);
+            String consulta = scanner.nextLine().trim();
+            
+            if (consulta.isEmpty()) {
+                return;
+            }
+
+            ArrayList<Pergunta> resultados = arqPerguntas.buscarPorPalavrasChave(consulta);
+
+            if (resultados == null || resultados.isEmpty()) {
+                Utilidades.pausar(scanner, "Nenhuma pergunta encontrada para os termos pesquisados.");
+                continue; 
+            }
+
+            novaBusca = navegarResultadosBusca(scanner, idUsuarioLogado, resultados);
         }
     }
 

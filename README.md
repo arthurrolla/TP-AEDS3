@@ -1,6 +1,6 @@
 # Ajuda Aí 2.0
 
-Trabalho prático 2 — Relacionamento N:N  
+Trabalho prático 3 — Índice invertido e busca por palavras-chave
 Disciplina de Algoritmos e Estruturas de Dados III (AEDs III) da PUC Minas.
 
 ## Integrantes
@@ -10,11 +10,11 @@ Disciplina de Algoritmos e Estruturas de Dados III (AEDs III) da PUC Minas.
 - Lucas Santiago Pereira
 - Matheus Arantes Coimbra
 
-## Apresentação — Parte 2
+## Apresentação — Parte 3
 
-O Ajuda Aí é um sistema de perguntas e respostas desenvolvido em Java, com interface textual no terminal e armazenamento em arquivos binários. O projeto utiliza um CRUD genérico, tabelas hash extensíveis e árvores B+.
+O Ajuda Aí é um sistema de perguntas e respostas desenvolvido em Java, com interface textual no terminal e armazenamento em arquivos binários. O projeto utiliza um CRUD genérico, tabelas hash extensíveis e árvores B+ para gerenciar usuários, perguntas, respostas e avaliações.
 
-Esta etapa amplia o trabalho desenvolvido no TP1, acrescentando a consulta de perguntas recentes, o cadastro de respostas e o gerenciamento de avaliações. O relacionamento N:N entre usuários e perguntas é representado pela entidade Resposta, que identifica o usuário que respondeu e a pergunta correspondente.
+O TP3 acrescenta a busca de perguntas pelos termos presentes no atributo de palavras-chave. Para isso, utiliza um índice invertido que associa cada termo às perguntas em que aparece. Os resultados são classificados pelo modelo TF×IDF, permitindo apresentar primeiro as perguntas com maior pontuação para a consulta.
 
 ## Como compilar e executar
 
@@ -29,31 +29,44 @@ Certifique-se de que tem o Java (JDK) instalado. Abra o terminal na pasta onde e
 
 ## Estrutura do projeto
 
-### Índice de perguntas por data
+### Tratamento dos termos
 
-A classe `ArquivoPergunta` recebeu uma árvore B+ com entradas da classe `ParDataId`, que armazena a data de criação e o ID da pergunta. Esse índice permite consultar as perguntas ativas da mais recente para a mais antiga.
+A classe TratamentoTermo concentra o processamento das palavras-chave e das consultas. O texto é convertido para letras minúsculas, os acentos são removidos e os termos são separados pelos delimitadores, incluindo espaços e ponto e vírgula. Em seguida, são descartadas as palavras presentes na lista de stop words, como artigos e preposições.
 
-### Respostas
+As repetições dos termos nas palavras-chave são preservadas para o cálculo de suas frequências. A indexação e a consulta utilizam o mesmo tratamento, permitindo, por exemplo, que uma busca por “INTELIGENCIA” encontre o termo cadastrado como “inteligência”.
 
-A classe `Resposta` contém os IDs da resposta, da pergunta e do usuário, além de data de criação, texto, nota, quantidade de avaliações e estado de atividade.
+### Índice invertido
 
-A classe `ArquivoResposta` estende `Arquivo<Resposta>` e gerencia sua persistência. Duas árvores B+ armazenam os pares `(idUsuario, idResposta)` e `(idPergunta, idResposta)`, permitindo consultar respostas por usuário e por pergunta.
+A classe IndicePerguntas gerencia a indexação das palavras-chave. Para cada termo, a classe ListaInvertida mantém uma lista de elementos representados por ElementoLista, contendo o ID da pergunta e a frequência relativa do termo.
 
-### Avaliações
+Uma árvore B+ adicional registra os IDs das perguntas indexadas, utilizando pares da classe ParIdId. Esse controle evita que a mesma pergunta seja incluída novamente no índice e contabilizada mais de uma vez ao reiniciar o programa.
 
-A classe `Avaliacao` contém os IDs da avaliação, do usuário e da resposta, além da indicação de avaliação positiva ou negativa.
+### Cálculo do TF
 
-A classe `ArquivoAvaliacao` estende `Arquivo<Avaliacao>` e mantém duas árvores B+ com os pares `(idUsuario, idAvaliacao)` e `(idResposta, idAvaliacao)`. Também utiliza `ArquivoResposta` para ajustar a nota e a quantidade de avaliações.
+O TF representa a proporção de ocorrências de um termo entre as palavras válidas de uma pergunta:
 
-As entidades `Resposta` e `Avaliacao` implementam `InterfaceRegistro`, com os métodos `serialize()` e `deserialize()` para armazenamento em arquivos binários.
+TF = ocorrências do termo / total de termos válidos nas palavras-chave
 
-### Interface e controles
+Por exemplo, se um termo aparece duas vezes em um conjunto de cinco palavras válidas, seu TF é 0,4. As ocorrências são agrupadas antes da gravação, mantendo uma única entrada por termo e pergunta.
 
-A interface textual é organizada pelas classes `ControleUsuario`, `ControlePergunta` e `ControleResposta`. O `ControleUsuario` mantém o usuário autenticado e permite acessar os menus da área pessoal. O `ControlePergunta` organiza a busca paginada, a consulta das próprias perguntas e a visualização das respostas recebidas.
+### Busca e classificação por TF×IDF
 
-O `ControleResposta` reúne as telas de cadastro e visualização de respostas, arquivamento, avaliação e cancelamento de avaliações. Também apresenta as opções “Minhas respostas” e “Minhas avaliações”, utilizando os métodos dos respectivos arquivos.
+O método IndicePerguntas.buscar() processa a consulta e recupera a lista de perguntas associadas a cada termo. Termos repetidos na consulta são considerados uma única vez.
 
-A classe `Principal` inicializa os arquivos e conecta os controles. A classe `Utilidades` reúne funções de apresentação, formatação de datas e tratamento de entradas numéricas.
+Para cada termo encontrado, calcula-se o IDF:
+IDF = log10(N / quantidade de perguntas que contêm o termo)
+
+N representa o total de perguntas indexadas. A contribuição de cada termo para uma pergunta é obtida multiplicando seu TF pelo IDF. As contribuições são somadas por ID de pergunta, formando uma pontuação final.
+
+A busca inclui perguntas que contenham pelo menos um dos termos pesquisados. Os resultados são ordenados por pontuação decrescente; em caso de empate, utiliza-se o ID da pergunta em ordem crescente como critério interno de desempate.
+
+A classe interna IndicePerguntas.Resultado representa o ID e a pontuação calculada. O método ArquivoPergunta.buscarPorPalavrasChave() recupera os registros correspondentes, preserva a ordem do ranking e retorna apenas perguntas existentes e ativas.
+
+### Integração com o CRUD
+
+A classe `ArquivoPergunta` atualiza o índice invertido nas operações de cadastro, alteração, arquivamento e exclusão interna de perguntas. No cadastro, os termos de uma pergunta ativa são indexados. Na alteração das palavras-chave, os vínculos antigos são removidos e os novos termos são incluídos. No arquivamento e na exclusão, os vínculos da pergunta são retirados do índice.
+
+A contagem utilizada no IDF é ajustada na inclusão e na remoção de perguntas. A alteração de palavras-chave mantém essa contagem. Ao abrir o arquivo de perguntas, o sistema inclui no índice as perguntas ativas existentes que ainda não estejam indexadas.
 
 ## Funcionalidades implementadas
 
@@ -129,61 +142,25 @@ Em “Minhas avaliações”, o usuário visualiza a pergunta, a resposta avalia
 
 ## Checklist
 
-- Há uma listagem paginada de perguntas, que mostra as perguntas em ordem decrescente de data a partir de uma Árvore B+ acrescentada ao CRUD de Perguntas?
+- O índice invertido com palavras-chave foi criado usando a classe ListaInvertida?
 
-  ```SIM```
+  **SIM.**
 
-- Há uma listagem das respostas a uma pergunta selecionada, em ordem decrescente de nota?
+- É possível buscar perguntas por palavras-chave no menu de buscar perguntas?
 
-  ```SIM```
+- As perguntas retornadas estão corretamente classificadas pelo modelo TFxIDF?
 
-- O usuário pode responder a uma pergunta?
-
-  ```SIM```
-
-- O usuário pode arquivar a própria resposta?
-
-  ```SIM```
-
-- O usuário pode avaliar uma resposta?
-
-  ```SIM```
-
-- Na área do usuário, o usuário pode visualizar as respostas às suas perguntas?
-
-  ```SIM```
-
-- Na área do usuário, o usuário pode arquivar uma resposta de outro usuário a uma das suas perguntas?
-
-  ```SIM```
-
-- Na área do usuário, o usuário pode visualizar e arquivar as respostas que escreveu?
-
-  ```SIM```
-
-- Na área do usuário, o usuário pode visualizar e arquivar a avaliação que realizou em uma resposta?
-
-  ```SIM```
-
-- A integridade do relacionamento entre perguntas e respostas está mantida em todas as operações?
-
-  ```SIM```
-
-- A integridade do relacionamento entre respostas e avaliações está mantida em todas as operações?
-
-  ```SIM```
+  **SIM.**
 
 - O trabalho compila corretamente?
 
-  ```SIM```
+  **SIM.**
 
 - O trabalho está completo e funcionando sem erros de execução?
 
-  ```SIM, considerando as funcionalidades implementadas e os testes realizados pelo grupo.```
-
 - O trabalho é original e não a cópia de um trabalho de outro grupo?
 
-  ```SIM```
+  **SIM.**
 
 ### Vídeo de Demonstração
   - **Link do Youtube**: https://youtu.be/5Ly1d_Zo3ek

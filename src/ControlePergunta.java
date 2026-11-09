@@ -51,7 +51,7 @@ public class ControlePergunta {
                     listarPerguntasRecentes(scanner, idUsuarioLogado);
                     break;
                 case "B":
-                    Utilidades.pausar(scanner,"Busca por palavras-chave não implementada nesta etapa.");
+                    // buscarPorPalavrasChave(scanner, idUsuarioLogado);
                     break;
                 case "R":
                     break;
@@ -121,6 +121,79 @@ public class ControlePergunta {
                     }
 
                     Pergunta selecionada = perguntas.get(numero - 1);
+                    visualizarPergunta(scanner, idUsuarioLogado, selecionada.getId());
+            }
+        }
+    }
+
+    private boolean navegarResultadosBusca(Scanner scanner, int idUsuarioLogado, ArrayList<Pergunta> resultados) throws Exception {
+        int pagina = 0;
+        int itensPorPagina = 5; 
+        SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy 'às' HH:mm");
+        
+        while (true) {
+            Utilidades.limparEcra();
+            System.out.println(Utilidades.COR_ROSA + "AJUDA AÍ 1.0");
+            System.out.println("------------" + Utilidades.COR_TEXTO);
+            System.out.println("> Início > Buscar perguntas > Busca por palavras-chave\n");
+            
+            int totalPaginas = (int) Math.ceil((double) resultados.size() / itensPorPagina);
+            System.out.println("Página " + (pagina + 1) + " de " + totalPaginas + " (" + resultados.size() + " perguntas encontradas)\n");
+            
+            int inicio = pagina * itensPorPagina;
+            int fim = Math.min(inicio + itensPorPagina, resultados.size());
+            
+            for (int i = inicio; i < fim; i++) {
+                Pergunta pergunta = resultados.get(i);
+                Usuario autor = arqUsuarios.read(pergunta.getIdUsuario());
+                String nomeAutor = autor != null ? autor.getNome() : "Usuário indisponível";
+                String data = formatador.format(new Date(pergunta.getCriacao()));
+                
+                int numExibicao = (i - inicio) + 1; 
+                System.out.println("(" + numExibicao + ") " + pergunta.getPergunta());
+                System.out.println("    Criada por " + nomeAutor + " em " + data);
+                System.out.println();
+            }
+            
+            if (pagina > 0) System.out.println("(A) Página anterior");
+            if (pagina < totalPaginas - 1) System.out.println("(B) Próxima página");
+            System.out.println("(N) Nova busca");
+            System.out.println("\n(R) Retornar ao menu");
+            System.out.print("\nOpção: " + Utilidades.RESET);
+
+            String opcao = scanner.nextLine().trim().toUpperCase();
+            
+            switch (opcao) {
+                case "A":
+                    if (pagina > 0) pagina--;
+                    else Utilidades.pausar(scanner, "Você já está na primeira página.");
+                    break;
+                case "B":
+                    if (pagina < totalPaginas - 1) pagina++;
+                    else Utilidades.pausar(scanner, "Não há próxima página.");
+                    break;
+                case "N":
+                    return true; 
+                case "R":
+                    return false; 
+                default:
+                    int numero;
+                    try {
+                        numero = Integer.parseInt(opcao);
+                    } catch (NumberFormatException e) {
+                        Utilidades.pausar(scanner, "Opção inválida.");
+                        break;
+                    }
+                    
+                    int itensNaPagina = fim - inicio;
+                    if (numero < 1 || numero > itensNaPagina) {
+                        Utilidades.pausar(scanner, "Número de pergunta inválido.");
+                        break;
+                    }
+
+                    int indiceReal = inicio + (numero - 1);
+                    Pergunta selecionada = resultados.get(indiceReal);
+                    
                     visualizarPergunta(scanner, idUsuarioLogado, selecionada.getId());
             }
         }

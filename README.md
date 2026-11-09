@@ -72,7 +72,7 @@ A contagem utilizada no IDF é ajustada na inclusão e na remoção de perguntas
 
 ### Busca de perguntas recentes
 
-A busca utiliza uma árvore B+ que organiza as perguntas ativas em ordem decrescente de data de criação. Os resultados são apresentados em páginas de cinco perguntas, com opções para avançar e retornar. Cada pergunta aparece com seu texto, nome do autor e data de criação, sendo selecionada por um número da listagem, sem expor o ID interno. A opção de busca por palavras-chave aparece no menu, mas não é implementada nesta etapa, conforme o enunciado.
+A busca utiliza uma árvore B+ que organiza as perguntas ativas em ordem decrescente de data de criação. Os resultados são apresentados em páginas de cinco perguntas, com opções para avançar e retornar. Cada pergunta aparece com seu texto, nome do autor e data de criação, sendo selecionada por um número da listagem, sem expor o ID interno.
 
 ### Visualização da pergunta e de suas respostas
 
@@ -102,43 +102,41 @@ Em “Minhas respostas”, o usuário consulta suas respostas ativas e pode sele
 
 A opção “Minhas perguntas” permite selecionar uma pergunta própria e visualizar as respostas recebidas, ordenadas por nota. Além de alterar ou arquivar a pergunta, seu autor pode abrir uma resposta recebida e arquivá-la, mediante confirmação.
 
+### Busca de perguntas por palavras-chave
+
+A opção “Busca por palavras-chave”, disponível no menu “Buscar perguntas”, permite informar um ou mais termos. A consulta utiliza o índice invertido construído a partir das palavras-chave cadastradas nas perguntas.
+
+O tratamento dos termos desconsidera diferenças entre letras maiúsculas e minúsculas e remove acentos, stop words e termos compostos somente por números. Uma consulta vazia retorna ao menu anterior.
+
+As perguntas ativas que contêm pelo menos um dos termos pesquisados são apresentadas em ordem decrescente de pontuação TF×IDF. Os resultados são exibidos em páginas de cinco perguntas, com texto, autor e data de criação.
+
+O usuário pode navegar entre as páginas, realizar uma nova busca ou selecionar uma pergunta para visualizar suas respostas, responder ou avaliar uma resposta de outro usuário. Quando não existem resultados, o sistema apresenta uma mensagem e permite informar outra consulta.
+
+### Atualização das palavras-chave e arquivamento
+
+Ao alterar as palavras-chave de uma pergunta, o sistema remove seus vínculos com os termos antigos e inclui os novos termos no índice. As buscas seguintes passam a considerar as palavras-chave atualizadas.
+
+Perguntas arquivadas deixam de aparecer nos resultados. As alterações permanecem após reiniciar o programa, e perguntas ativas já existentes são indexadas automaticamente quando ainda não constam no índice.
+
 ## Telas do sistema
 
-### Busca de perguntas recentes
+### Busca por palavras-chave
 
-Perguntas ativas em ordem decrescente de data de criação, com cinco perguntas por página e opções de navegação.
+Resultado da busca por palavras-chave, com identificação do autor e data de criação da pergunta. A tela permite selecionar uma pergunta, realizar uma nova busca ou retornar ao menu.
 
-![Perguntas recentes](imagens/tp2_perguntas_recentes.png)
+![Resultado da busca por palavras-chave](imagens/tp3_busca_multiplos_termos.png)
 
-### Pergunta e respostas
+### Detalhe da pergunta encontrada
 
-Detalhe da pergunta com suas respostas ativas, ordenadas por nota, mostrando autoria, data e quantidade de avaliações.
+Ao selecionar um resultado, o usuário visualiza a pergunta, suas palavras-chave e as respostas disponíveis. Também pode responder à pergunta ou retornar à listagem.
 
-![Pergunta e respostas](imagens/tp2_pergunta_respostas.png)
+![Detalhe da pergunta encontrada](imagens/tp3_detalhe_pergunta.png)
 
-### Cadastro de resposta
+### Paginação dos resultados
 
-Tela de inclusão de uma resposta com várias linhas de texto. O comando `/fim` finaliza a entrada e `/cancelar` permite retornar sem gravar.
+Os resultados são apresentados em páginas de até cinco perguntas, preservando a ordem de relevância calculada pelo TF×IDF. A imagem mostra a segunda página de uma busca com seis resultados.
 
-![Cadastro de resposta](imagens/tp2_cadastro_resposta.png)
-
-### Resposta própria
-
-Na área pessoal, o usuário pode visualizar uma resposta que escreveu, junto da pergunta correspondente, e arquivá-la.
-
-![Detalhe da resposta própria](imagens/tp2_resposta_propria.png)
-
-### Avaliação e arquivamento de resposta recebida
-
-Ao visualizar uma resposta de outro usuário, são apresentadas as opções de concordar ou discordar. Nesta tela, a usuária também é autora da pergunta e, por isso, pode arquivar a resposta recebida.
-
-![Avaliação e arquivamento de resposta](imagens/tp2_avaliar_resposta.png)
-
-### Consulta e cancelamento de avaliação
-
-Em “Minhas avaliações”, o usuário visualiza a pergunta, a resposta avaliada e o voto realizado, com a opção de cancelar a avaliação.
-
-![Detalhe da avaliação](imagens/tp2_cancelar_avaliacao.png)
+![Segunda página dos resultados da busca](imagens/tp3_busca_pagina2.png)
 
 ## Checklist
 
@@ -147,6 +145,8 @@ Em “Minhas avaliações”, o usuário visualiza a pergunta, a resposta avalia
   **SIM.**
 
 - É possível buscar perguntas por palavras-chave no menu de buscar perguntas?
+
+  **SIM.**
 
 - As perguntas retornadas estão corretamente classificadas pelo modelo TFxIDF?
 
@@ -158,9 +158,11 @@ Em “Minhas avaliações”, o usuário visualiza a pergunta, a resposta avalia
 
 - O trabalho está completo e funcionando sem erros de execução?
 
+  **SIM, considerando as funcionalidades implementadas e os testes realizados pelo grupo.**
+
 - O trabalho é original e não a cópia de um trabalho de outro grupo?
 
   **SIM.**
 
 ### Vídeo de Demonstração
-  - **Link do Youtube**: https://youtu.be/5Ly1d_Zo3ek
+  - **Link do Youtube**: 

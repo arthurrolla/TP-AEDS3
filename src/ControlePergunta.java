@@ -121,8 +121,8 @@ public class ControlePergunta {
                     }
 
                     Pergunta selecionada = perguntas.get(numero - 1);
-                    visualizarPergunta(scanner, idUsuarioLogado, selecionada.getId());
-            }
+                    visualizarPergunta(scanner, idUsuarioLogado, selecionada.getId(),"> Início > Buscar perguntas > Perguntas mais recentes > Pergunta");
+                }
         }
     }
 
@@ -222,7 +222,7 @@ public class ControlePergunta {
                     int indiceReal = inicio + (numero - 1);
                     Pergunta selecionada = resultados.get(indiceReal);
                     
-                    visualizarPergunta(scanner, idUsuarioLogado, selecionada.getId());
+                    visualizarPergunta(scanner, idUsuarioLogado, selecionada.getId(),"> Início > Buscar perguntas > Busca por palavras-chave > Pergunta");
             }
         }
     }
@@ -493,8 +493,7 @@ public class ControlePergunta {
         }
     }
 
-    private void visualizarPergunta(Scanner scanner, int idUsuarioLogado, int idPergunta)throws Exception{
-        String caminho = "> Início > Buscar perguntas > Perguntas mais recentes > Pergunta";
+    private void visualizarPergunta(Scanner scanner, int idUsuarioLogado,int idPergunta, String caminho) throws Exception {
         SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy 'às' HH:mm");
         while (true){
             Pergunta pergunta = arqPerguntas.read(idPergunta);

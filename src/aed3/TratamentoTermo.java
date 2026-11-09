@@ -50,7 +50,7 @@ public final class TratamentoTermo {
             .toLowerCase(Locale.ROOT);
 
         for (String palavra : normalizado.split("[^\\p{L}\\p{N}]+")) {
-            if (!palavra.isEmpty() && !STOP_WORDS.contains(palavra)) {
+            if (!palavra.isEmpty()&& !palavra.matches("\\p{N}+")&& !STOP_WORDS.contains(palavra)) {
                 termos.add(palavra);
             }
         }

@@ -1,7 +1,6 @@
 package entidades;
 
 import aed3.*;
-import java.text.Normalizer;
 import java.util.*;
 
 /**
@@ -13,20 +12,6 @@ import java.util.*;
  * entidades usada no cálculo do IDF.
  */
 public class IndicePerguntas {
-
-    // Palavras irrelevantes para a busca (já sem acento e em minúsculas)
-    private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
-        "a", "o", "as", "os", "um", "uma", "uns", "umas",
-        "de", "do", "da", "dos", "das", "em", "no", "na", "nos", "nas",
-        "por", "pelo", "pela", "pelos", "pelas", "para", "pra", "com", "sem",
-        "sobre", "sob", "ate", "entre", "ao", "aos", "e", "ou", "mas", "que",
-        "se", "como", "qual", "quais", "quando", "onde", "quem", "porque",
-        "eu", "me", "meu", "minha", "seu", "sua", "ele", "ela", "isso", "isto",
-        "esse", "essa", "este", "esta", "aquele", "aquela", "ser", "estar",
-        "ter", "ha", "foi", "sao", "eh", "ja", "mais", "menos", "muito",
-        "zero", "dois", "duas", "tres", "quatro", "cinco", "seis", "sete",
-        "oito", "nove", "dez", "primeiro", "segundo", "terceiro"
-    ));
 
     // Uma pergunta encontrada e sua pontuação TFxIDF
     public static class Resultado {
@@ -53,17 +38,7 @@ public class IndicePerguntas {
 
     // Minúsculas, sem acentos, sem stop words; mantém repetições para o cálculo do TF
     static ArrayList<String> extrairTermos(String texto) {
-        ArrayList<String> termos = new ArrayList<>();
-        if (texto == null) return termos;
-        String limpo = Normalizer.normalize(texto, Normalizer.Form.NFD)
-            .replaceAll("\\p{M}", "")
-            .toLowerCase();
-        for (String palavra : limpo.split("[^\\p{L}\\p{N}]+")) {
-            if (!palavra.isEmpty() && !STOP_WORDS.contains(palavra)) {
-                termos.add(palavra);
-            }
-        }
-        return termos;
+        return TratamentoTermo.extrair(texto);
     }
 
     private boolean estaIndexada(int idPergunta) throws Exception {
@@ -73,13 +48,9 @@ public class IndicePerguntas {
     // Grava TF = ocorrências / total de termos válidos. Se o par já existir, substitui
     // (não soma), então repetir a operação nunca dobra a frequência.
     private void adicionarTermos(int idPergunta, String palavrasChave) throws Exception {
-        ArrayList<String> termos = extrairTermos(palavrasChave);
-        Map<String, Integer> ocorrencias = new LinkedHashMap<>();
-        for (String termo : termos) {
-            ocorrencias.merge(termo, 1, Integer::sum);
-        }
+        Map<String, Integer> ocorrencias = TratamentoTermo.frequencias(palavrasChave);
         for (Map.Entry<String, Integer> par : ocorrencias.entrySet()) {
-            float tf = (float) par.getValue() / termos.size();
+            float tf = TratamentoTermo.tf(par.getValue(), palavrasChave);
             ElementoLista atual = lista.read(par.getKey(), idPergunta);
             if (atual == null) {
                 lista.create(par.getKey(), new ElementoLista(idPergunta, tf));
